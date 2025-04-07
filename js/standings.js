@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         standingsGrid.innerHTML = '<div class="loading">Cargando clasificaciones...</div>';
         
         try {
-            const leagueId = league === 'nfl' ? 1 : 2; // Verificar IDs reales
+            const leagueId = league === 'nfl' ? 1 : 2; // Verify Id real
             const standings = await fetchStandings(leagueId);
             
             standingsGrid.innerHTML = '';
@@ -58,8 +58,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             standingsGrid.innerHTML = `
                 <div class="error-message">
-                    <h3>⚠️ Datos no disponibles</h3>
-                    <p>La clasificación se actualizará pronto</p>
+                    <h3>⚠️ Data not available</h3>
+                    <p>Standings will be updated soon</p>
                 </div>
             `;
         }

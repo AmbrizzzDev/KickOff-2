@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add NCAA content loading logic
     });
 
-// En tu archivo JS (scripts.js)
+    // Update favicon
 function updateFavicon() {
     const favicon = document.querySelector("link[rel='icon']");
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -33,9 +33,9 @@ function updateFavicon() {
     }
 }
 
-// Cambiar favicon al cargar la página
+// Update favicon on page load
 updateFavicon();
 
-// Cambiar favicon si el usuario cambia el modo del sistema
+// Update favicon when user changes system theme
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateFavicon);
 });

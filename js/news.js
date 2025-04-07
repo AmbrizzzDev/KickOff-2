@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newsContainer = document.getElementById('newsContainer');
     const filterButtons = document.querySelectorAll('.filter-btn');
 
-    // Datos de ejemplo
+    // Data example
     const newsData = [
         {
             title: "Quarterback Trade Shock",
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Event listeners para filtros
+    // Event listeners for filters
     filterButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             filterButtons.forEach(b => b.classList.remove('active'));

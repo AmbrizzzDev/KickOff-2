@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('searchInput');
     const weekFilter = document.getElementById('weekFilter');
 
-    // Datos de ejemplo actualizados
+    // Data example updated
     const matchesData = {
         nfl: [
             {
@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 timeLeft: "",
                 possession: "",
                 drives: {
-                    "KC": 0, // Cambia estos valores
-                    "PHI": 0 // Cambia estos valores
+                    "KC": 0, // Change these values
+                    "PHI": 0 // Change these values
                 }
             },
             {
@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 timeLeft: "",
                 possession: "",
                 drives: {
-                    "DAL": 0, // Cambia estos valores
-                    "SF": 0 // Cambia estos valores
+                    "DAL": 0, // Change these values
+                    "SF": 0 // Change these values
                 }
             }
         ],
@@ -53,8 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 timeLeft: "",
                 possession: "",
                 drives: {
-                    "ALA": 0, // Cambia estos valores
-                    "UGA": 0 // Cambia estos valores
+                    "ALA": 0, // Change these values
+                    "UGA": 0 // Change these values
                 }
             }
         ]
@@ -72,11 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         filteredMatches.forEach(match => {
-            // Obtener códigos de los equipos
+            // Get team codes
             const team1Code = getTeamCode(match.teams[0]);
             const team2Code = getTeamCode(match.teams[1]);
 
-            // Rutas de los logos (en img/teams/nfl)
+            // Logo paths (in img/teams/nfl)
             const team1Logo = `img/teams/nfl/${team1Code}.png`;
             const team2Logo = `img/teams/nfl/${team2Code}.png`;
 
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Función para obtener el código del equipo
+    // Function to get team code
     function getTeamCode(teamName) {
         const teamCodes = {
             "Arizona Cardinals": "ari",
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "Tennessee Titans": "ten",
             "Washington Commanders": "wsh"
         };
-        return teamCodes[teamName] || "default"; // Usar "default" si no se encuentra el código
+        return teamCodes[teamName] || "default"; // Use "default" if code is not found
     }
 
     // Event Listeners

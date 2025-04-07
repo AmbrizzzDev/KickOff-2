@@ -1,14 +1,14 @@
-// Bloquear clic derecho
+// Block right click
 document.addEventListener("contextmenu", (e) => {
-  e.preventDefault();
+    e.preventDefault();
 });
 
-// Bloquear teclas como F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+// Block keys like F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
 document.addEventListener("keydown", (e) => {
-  if (
-    e.key === "F12" ||
-    (e.ctrlKey &&
-      e.shiftKey &&
+    if (
+        e.key === "F12" ||
+        (e.ctrlKey &&
+            e.shiftKey &&
       (e.key === "I" || e.key === "C" || e.key === "J")) ||
     (e.ctrlKey && e.key === "U")
   ) {
@@ -16,12 +16,12 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Bloquear selección de texto
+// Block text selection
 document.addEventListener("selectstart", (e) => {
   e.preventDefault();
 });
 
-// Bloquear arrastrar elementos
+// Block drag elements
 document.addEventListener("dragstart", (e) => {
   e.preventDefault();
 });
