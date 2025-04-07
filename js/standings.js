@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!data || Object.keys(data).length === 0) {
             standingsGrid.innerHTML = `
                 <div class="no-standings-message">
-                    <p>No standings are available at this time.</p>
+                    <p>No standings are available at this time ${league === 'nfl' ? 'for NFL' : 'for NCAA'}.</p>
                     <p>Check back later for updated standings!</p>
                 </div>
             `;

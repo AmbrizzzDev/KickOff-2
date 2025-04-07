@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const noMatchesMessage = document.createElement('div');
             noMatchesMessage.className = 'no-matches-message';
             noMatchesMessage.innerHTML = `
-                <p>No matches are scheduled at this time.</p>
+                <p>No matches are scheduled at this time ${league === 'nfl' ? 'for NFL' : 'for NCAA'}.</p>
                 <p>Check back later for upcoming meetings!</p>
             `;
             matchesContainer.appendChild(noMatchesMessage);

@@ -29,11 +29,12 @@ body {
     padding: 1.5rem 5%;
     background: rgba(10, 10, 10, 0.95);
     position: relative;
+    z-index: 1000;
 }
 
 .logo {
     display: flex;
-    align-items: center; /* Alinea verticalmente */
+    align-items: center;
     gap: 1rem;
 }
 
@@ -68,10 +69,28 @@ body {
     color: var(--text-light);
     text-decoration: none;
     transition: color 0.3s;
+    font-family: 'Poppins', sans-serif;
 }
 
 .nav-links a:hover {
     color: var(--primary-color);
+}
+
+/* Hamburger Menu */
+.hamburger {
+    display: none;
+    cursor: pointer;
+    padding: 5px;
+    z-index: 1001;
+}
+
+.bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    transition: all 0.3s ease-in-out;
+    background-color: var(--text-light);
 }
 
 /* Hero Section */
@@ -107,19 +126,57 @@ body {
         font-size: 1.2rem; /* Más pequeño en móvil */
     }
     
-    .nav-links {
-        position: fixed;
-        top: 80px;
-        left: 0;
-        flex-direction: column;
-        align-items: center;
-        background: rgba(10, 10, 10, 0.95);
-        width: 100%;
-        padding: 1rem 0;
-        display: none;
-        z-index: 1000;
+    .hamburger {
+        display: block;
     }
-    
+
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+
+    .nav-links {
+        display: flex;
+        position: fixed;
+        right: -250px;
+        top: 0;
+        gap: 2rem;
+        flex-direction: column;
+        background: var(--card-bg);
+        width: 250px;
+        height: 100vh;
+        text-align: center;
+        transition: 0.3s ease;
+        padding-top: 4rem;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-links.active {
+        right: 0;
+    }
+
+    .nav-links a {
+        display: block;
+        padding: 1rem 0;
+        font-size: 1.1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-links a:last-child {
+        border-bottom: none;
+    }
+
+    .nav-links a:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
     .league-toggle {
         flex-wrap: wrap;
         padding: 0 10px;
@@ -133,13 +190,6 @@ body {
 
     .nav-links.active {
         display: flex;
-    }
-
-    .hamburger {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        cursor: pointer;
     }
 }
 
