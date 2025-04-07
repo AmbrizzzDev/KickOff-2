@@ -1,0 +1,157 @@
+:root {
+    --primary-color: #FF4655;
+    --secondary-color: #00FF88;
+    --bg-dark: #0A0A0A;
+    --text-light: #FFFFFF;
+    --card-bg: #1A1A1A;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navbar Styles */
+.navbar {
+    display: flex;
+    justify-content: center; /* Cambiado de space-between */
+    align-items: center;
+    padding: 1.5rem 5%;
+    background: rgba(10, 10, 10, 0.95);
+    position: relative; /* Para posicionar el logo */
+}
+
+.logo {
+    display: flex;
+    align-items: center; /* Alinea verticalmente */
+    gap: 1rem;
+}
+
+.logo img {
+    width: 50px; /* Ajusta según necesites */
+    height: auto; /* Mantiene la proporción */
+    margin-bottom: 0; /* Elimina margen inferior si existe */
+}
+
+.logo-text {
+    font-family: 'Lacquer', cursive;
+    font-size: 1.5rem; /* Ajusta según necesites */
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1; /* Asegura que no haya espacio extra */
+    margin: 0; /* Elimina márgenes por defecto */
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    margin: 0 auto; /* Centrado horizontal */
+}
+
+.nav-links a {
+    color: var(--text-light);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--primary-color);
+}
+
+/* Hero Section */
+.hero {
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+}
+
+.hero-title {
+    font-family: 'Lacquer', cursive;
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .logo img {
+        width: 40px; /* Más pequeño en móvil */
+    }
+
+    .logo-text {
+        font-size: 1.2rem; /* Más pequeño en móvil */
+    }
+    
+    .nav-links {
+        flex-direction: column;
+        text-align: center;
+        width: 100%;
+    }
+    
+    .league-toggle {
+        flex-wrap: wrap;
+        padding: 0 10px;
+    }
+    
+    .toggle-btn {
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .hamburger {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        cursor: pointer;
+    }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleUp {
+    from { transform: scale(0.95); }
+    to { transform: scale(1); }
+}
+
+.main-content {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.match-card, .standings-table {
+    animation: scaleUp 0.4s ease;
+}
+
+/* Efecto hover suave */
+.match-card, .standings-table tr {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+

@@ -1,0 +1,36 @@
+.standings-container {
+    padding: 2rem 5%;
+}
+
+.section-title {
+    font-family: 'Lacquer', cursive;
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+.standings-table {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: var(--primary-color);
+    padding: 1.2rem;
+    text-align: left;
+    font-family: 'Lacquer', cursive;
+}
+
+td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+tr:hover {
+    background: rgba(255,70,85,0.1);
+}

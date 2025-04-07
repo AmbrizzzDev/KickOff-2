@@ -1,0 +1,253 @@
+.matches-section {
+    padding: 2rem 5%;
+}
+
+.league-toggle {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+
+.toggle-btn {
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 25px;
+    background: var(--card-bg);
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.toggle-btn.active {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    font-weight: 500;
+}
+
+.filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.search-bar {
+    flex: 1;
+    max-width: 400px;
+    display: flex;
+    background: var(--card-bg);
+    border-radius: 25px;
+    padding: 0.5rem 1rem;
+}
+
+.search-bar input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    padding: 0.5rem;
+}
+
+.search-bar button {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+.week-filter {
+    padding: 0.8rem;
+    border-radius: 25px;
+    background: var(--card-bg);
+    color: var(--text-light);
+    border: none;
+    font-family: 'Poppins', sans-serif;
+}
+
+.matches-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.match-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 1.5rem;
+    position: relative;
+    transition: transform 0.3s;
+}
+
+.match-card.live {
+    border: 2px solid var(--primary-color);
+    animation: pulseLive 1.5s infinite;
+}
+
+.match-card:hover {
+    transform: translateY(-5px);
+}
+
+.match-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.live-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.3rem 1rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.league-tag {
+    background: var(--primary-color);
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-family: 'Lacquer', cursive;
+}
+
+.teams-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative; /* Necesario para la línea decorativa */
+}
+
+/* Línea decorativa debajo del equipo con posesión */
+.possessing::after {
+    content: '';
+    position: absolute;
+    bottom: -5px; /* Posición de la línea */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%; /* Ancho de la línea */
+    height: 3px; /* Grosor de la línea */
+    background: var(--secondary-color); /* Color de la línea */
+    animation: slideLine 1.5s infinite; /* Animación de la línea */
+}
+
+/* Animación de la línea */
+@keyframes slideLine {
+    0% {
+        width: 80%;
+    }
+    50% {
+        width: 100%;
+    }
+    100% {
+        width: 80%;
+    }
+}
+
+.team-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 50%; /* Hace que la imagen sea circular */
+    transition: all 0.3s;
+    position: relative; /* Necesario para el balón animado */
+}
+
+/* Balón animado sobre el logo */
+.possessing .team-logo::after {
+    content: '⚽'; /* Ícono de balón */
+    position: absolute;
+    top: -15px; /* Ajusta la posición vertical del balón */
+    right: -15px; /* Ajusta la posición horizontal del balón */
+    font-size: 1.5rem; /* Tamaño del balón */
+    animation: bounceBall 0.5s infinite alternate; /* Animación de rebote */
+    z-index: 2; /* Asegura que el balón esté sobre el logo */
+}
+
+/* Animación de rebote para el balón */
+@keyframes bounceBall {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-5px);
+    }
+}
+
+.team-name {
+    font-size: 1rem;
+    text-align: center;
+}
+
+.score {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+
+.vs-text {
+    font-family: 'Lacquer', cursive;
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+}
+
+.live-stats {
+    margin-top: 1rem;
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.drive-meter {
+    height: 5px;
+    background: rgba(255,255,255,0.2); /* Color de fondo de la barra */
+    border-radius: 3px;
+    margin: 0.5rem 0;
+    overflow: hidden; /* Asegura que el contenido no se salga */
+}
+
+.drive-meter span {
+    display: block;
+    height: 100%;
+    background: var(--secondary-color); /* Color de la barra de progreso */
+    transition: width 0.5s ease; /* Transición suave */
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.match-details {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.match-time {
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+}
+
+.match-stadium {
+    color: #888;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+@keyframes pulseLive {
+    0% { box-shadow: 0 0 0 0 rgba(255,70,85,0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255,70,85,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,70,85,0); }
+}
