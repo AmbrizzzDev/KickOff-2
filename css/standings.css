@@ -3,34 +3,101 @@
 }
 
 .section-title {
-    font-family: 'Lacquer', cursive;
     color: var(--primary-color);
+    font-family: 'Lacquer', cursive;
+    text-align: center;
     margin-bottom: 2rem;
+    font-size: 2.5rem;
 }
 
 .standings-table {
-    background: var(--card-bg);
-    border-radius: 12px;
-    overflow: hidden;
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
+.standings-card {
+    background: rgba(32, 32, 32, 0.95);
+    border-radius: 15px;
+    padding: 1.5rem;
+    position: relative;
 }
 
-th {
-    background: var(--primary-color);
-    padding: 1.2rem;
-    text-align: left;
+.conference-title {
     font-family: 'Lacquer', cursive;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
 }
 
-td {
-    padding: 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+.division-badge {
+    background: var(--primary-color);
+    color: var(--bg-dark);
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    display: inline-block;
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
 }
 
-tr:hover {
-    background: rgba(255,70,85,0.1);
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 2px solid var(--primary-color);
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.team-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.team-logo-sm {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.team-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-row:last-child {
+    border-bottom: none;
+}
+
+.team-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.team-stats span {
+    min-width: 2.5rem;
+    text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .standings-table {
+        grid-template-columns: 1fr;
+    }
+    
+    .team-stats {
+        gap: 1rem;
+    }
+    
+    .team-stats span {
+        min-width: 2rem;
+    }
 }

@@ -7,56 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Data example updated
     const matchesData = {
         nfl: [
-            {
-                teams: ["Kansas City Chiefs", "Philadelphia Eagles"],
-                date: "2026-09-10",
-                time: "20:30",
-                stadium: "Arrowhead Stadium",
-                week: 1,
-                live: false,
-                score: [0, 0],
-                quarter: "",
-                timeLeft: "",
-                possession: "",
-                drives: {
-                    "KC": 0, // Change these values
-                    "PHI": 0 // Change these values
-                }
-            },
-            {
-                teams: ["Dallas Cowboys", "San Francisco 49ers"],
-                date: "2026-09-17",
-                time: "18:00",
-                stadium: "AT&T Stadium",
-                week: 2,
-                live: false,
-                score: [0, 0],
-                quarter: "",
-                timeLeft: "",
-                possession: "",
-                drives: {
-                    "DAL": 0, // Change these values
-                    "SF": 0 // Change these values
-                }
-            }
+
         ],
         ncaa: [
-            {
-                teams: ["Alabama Crimson Tide", "Georgia Bulldogs"],
-                date: "2026-09-09",
-                time: "15:00",
-                stadium: "Bryant-Denny Stadium",
-                week: 1,
-                live: false,
-                score: [0, 0],
-                quarter: "",
-                timeLeft: "",
-                possession: "",
-                drives: {
-                    "ALA": 0, // Change these values
-                    "UGA": 0 // Change these values
-                }
-            }
+
         ]
     };
 
@@ -70,6 +24,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const matchesWeek = week === 'all' || match.week.toString() === week;
             return matchesSearch && matchesWeek;
         });
+
+        if (filteredMatches.length === 0) {
+            const noMatchesMessage = document.createElement('div');
+            noMatchesMessage.className = 'no-matches-message';
+            noMatchesMessage.innerHTML = `
+                <p>No matches are scheduled at this time.</p>
+                <p>Check back later for upcoming meetings!</p>
+            `;
+            matchesContainer.appendChild(noMatchesMessage);
+            return;
+        }
 
         filteredMatches.forEach(match => {
             // Get team codes
@@ -157,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "Tennessee Titans": "ten",
             "Washington Commanders": "wsh"
         };
-        return teamCodes[teamName] || "default"; // Use "default" if code is not found
+        return teamCodes[teamName] || "default"; // Use default if code is not found
     }
 
     // Event Listeners
