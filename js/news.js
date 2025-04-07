@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: "The Edge With Micah Parsons",
             category: "interviews",
             date: "2024-03-13",
-            excerpt: "S2 E25 is now available on 'Bleacher Report' Youtube Channel.",
+            excerpt: "S2 E25 is now available on 'Bleacher Report' Youtube Channel. Please watch!",
             image: "img/news/theedge.jpg"
         }
     ];
