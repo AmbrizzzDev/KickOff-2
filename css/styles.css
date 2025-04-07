@@ -24,11 +24,11 @@ body {
 /* Navbar Styles */
 .navbar {
     display: flex;
-    justify-content: center; /* Cambiado de space-between */
+    justify-content: space-between;
     align-items: center;
     padding: 1.5rem 5%;
     background: rgba(10, 10, 10, 0.95);
-    position: relative; /* Para posicionar el logo */
+    position: relative;
 }
 
 .logo {
@@ -46,8 +46,10 @@ body {
 .logo-text {
     font-family: 'Lacquer', cursive;
     font-size: 1.5rem; /* Ajusta según necesites */
+    color: var(--text-light);
     background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     line-height: 1; /* Asegura que no haya espacio extra */
     margin: 0; /* Elimina márgenes por defecto */
@@ -56,7 +58,10 @@ body {
 .nav-links {
     display: flex;
     gap: 2rem;
-    margin: 0 auto; /* Centrado horizontal */
+    margin: 0 auto;
+    justify-content: center;
+    width: 100%;
+    padding: 0 100px; /* Space for logo */
 }
 
 .nav-links a {
@@ -103,9 +108,16 @@ body {
     }
     
     .nav-links {
+        position: fixed;
+        top: 80px;
+        left: 0;
         flex-direction: column;
-        text-align: center;
+        align-items: center;
+        background: rgba(10, 10, 10, 0.95);
         width: 100%;
+        padding: 1rem 0;
+        display: none;
+        z-index: 1000;
     }
     
     .league-toggle {
