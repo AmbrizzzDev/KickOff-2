@@ -5,14 +5,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const weekFilter = document.getElementById('weekFilter');
 
     // Data example updated
-    const matchesData = {
-        nfl: [
+    let matchesData = {};
 
-        ],
-        ncaa: [
-
-        ]
-    };
+    fetch('data/matches.json')
+      .then(res => res.json())
+      .then(data => {
+        matchesData = data;
+        renderMatches(); // solo después de cargar datos
+      })
+      .catch(err => console.error('Error al cargar el JSON:', err));    
 
     function renderMatches(league = 'nfl', searchTerm = '', week = 'all') {
         matchesContainer.innerHTML = '';
@@ -151,5 +152,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initial render
-    renderMatches();
+    //renderMatches();
 });
