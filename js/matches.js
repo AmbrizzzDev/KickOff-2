@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('searchInput');
     const weekFilter = document.getElementById('weekFilter');
 
-    // Data example updated
     let matchesData = {};
 
     fetch('data/matches.json')
@@ -38,13 +37,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         filteredMatches.forEach(match => {
-            // Get team codes
             const team1Code = getTeamCode(match.teams[0]);
             const team2Code = getTeamCode(match.teams[1]);
 
-            // Logo paths (in img/teams/nfl)
-            const team1Logo = `img/teams/nfl/${team1Code}.png`;
-            const team2Logo = `img/teams/nfl/${team2Code}.png`;
+            // Seleccionar logos según la liga
+            const team1Logo = league === 'nfl'
+                ? `img/teams/nfl/${team1Code}.png`
+                : `img/teams/ncaa/${team1Code}.png`;
+
+            const team2Logo = league === 'nfl'
+                ? `img/teams/nfl/${team2Code}.png`
+                : `img/teams/ncaa/${team2Code}.png`;
 
             const matchCard = document.createElement('div');
             matchCard.className = `match-card ${match.live ? 'live' : ''}`;
@@ -56,15 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="teams-container">
                     <div class="team ${match.possession === team1Code ? 'possessing' : ''}">
-                        <img src="${team1Logo}" 
-                             alt="${match.teams[0]}" class="team-logo">
+                        <img src="${team1Logo}" alt="${match.teams[0]}" class="team-logo">
                         <span class="team-name">${match.teams[0]}</span>
                         ${match.live ? `<span class="score">${match.score[0]}</span>` : ''}
                     </div>
                     <span class="vs-text">VS</span>
                     <div class="team ${match.possession === team2Code ? 'possessing' : ''}">
-                        <img src="${team2Logo}" 
-                             alt="${match.teams[1]}" class="team-logo">
+                        <img src="${team2Logo}" alt="${match.teams[1]}" class="team-logo">
                         <span class="team-name">${match.teams[1]}</span>
                         ${match.live ? `<span class="score">${match.score[1]}</span>` : ''}
                     </div>
@@ -87,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Function to get team code
     function getTeamCode(teamName) {
         const teamCodes = {
             "Arizona Cardinals": "ari",
@@ -121,9 +121,23 @@ document.addEventListener('DOMContentLoaded', () => {
             "Seattle Seahawks": "sea",
             "Tampa Bay Buccaneers": "tb",
             "Tennessee Titans": "ten",
-            "Washington Commanders": "wsh"
+            "Washington Commanders": "wsh",
+
+            // NCAA (puedes agregar más)
+            "Hawai'i": "hawaii",
+            "Stephen F. Austin": "stephenf.austin",
+            "San José State": "sanjoséstate",
+            "St. Francis (PA)": "st.francis(pa)",
+            "Miami (OH)": "miami(oh)",
+            "Alabama A&M": "alabamaa&m",
+            "East Texas A&M": "easttexasa&m",
+            "Texas A&M": "texasa&m",
+            "William & Mary": "william&mary",
+            "Florida A&M": "floridaa&m",
+            "Prairie View A&M": "prairieviewa&m",
+            "North Carolina A&T": "northcarolinaa&t"
         };
-        return teamCodes[teamName] || "default"; // Use default if code is not found
+        return teamCodes[teamName] || teamName.toLowerCase().replace(/[^a-z]/gi, '');
     }
 
     // Event Listeners
@@ -150,7 +164,4 @@ document.addEventListener('DOMContentLoaded', () => {
             weekFilter.value
         );
     });
-
-    // Initial render
-    //renderMatches();
 });

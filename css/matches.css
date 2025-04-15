@@ -174,7 +174,7 @@
 
 /* Balón animado sobre el logo */
 .possessing .team-logo::after {
-    content: '⚽'; /* Ícono de balón */
+    content: '🏈'; /* Ícono de balón */
     position: absolute;
     top: -15px; /* Ajusta la posición vertical del balón */
     right: -15px; /* Ajusta la posición horizontal del balón */
