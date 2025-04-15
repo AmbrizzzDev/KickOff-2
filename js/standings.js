@@ -4,26 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Manual standings data
     const standingsData = {
         nfl: {
-            "AFC North": [
-                { name: "Baltimore Ravens", logo: "img/teams/nfl/bal.png", w: 13, l: 4, t: 0, pf: 483 },
-                { name: "Cleveland Browns", logo: "img/teams/nfl/cle.png", w: 11, l: 6, t: 0, pf: 396 },
-                { name: "Pittsburgh Steelers", logo: "img/teams/nfl/pit.png", w: 10, l: 7, t: 0, pf: 324 },
-                { name: "Cincinnati Bengals", logo: "img/teams/nfl/cin.png", w: 9, l: 8, t: 0, pf: 366 }
-            ],
-            "AFC East": [
-                { name: "Buffalo Bills", logo: "img/teams/nfl/buf.png", w: 11, l: 6, t: 0, pf: 451 },
-                { name: "Miami Dolphins", logo: "img/teams/nfl/mia.png", w: 11, l: 6, t: 0, pf: 496 },
-                { name: "New York Jets", logo: "img/teams/nfl/nyj.png", w: 7, l: 10, t: 0, pf: 268 },
-                { name: "New England Patriots", logo: "img/teams/nfl/ne.png", w: 4, l: 13, t: 0, pf: 236 }
-            ]
+            
         },
         ncaa: {
-            "Big Ten East": [
-                { name: "Michigan", logo: "img/teams/ncaa/mich.png", w: 15, l: 0, t: 0, pf: 572 },
-                { name: "Ohio State", logo: "img/teams/ncaa/osu.png", w: 11, l: 2, t: 0, pf: 430 },
-                { name: "Penn State", logo: "img/teams/ncaa/psu.png", w: 10, l: 3, t: 0, pf: 421 },
-                { name: "Maryland", logo: "img/teams/ncaa/mary.png", w: 8, l: 5, t: 0, pf: 367 }
-            ]
+
         }
     };
 
