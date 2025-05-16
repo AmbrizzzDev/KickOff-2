@@ -73,6 +73,14 @@
     font-family: 'Poppins', sans-serif;
 }
 
+.seasonTypeFilter {
+    padding: 0.8rem;
+    border-radius: 25px;
+    background: var(--card-bg);
+    color: var(--text-light);
+    border: none;
+    font-family: 'Poppins', sans-serif;
+}
 .matches-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -121,7 +129,7 @@
 }
 
 .match-week {
-    color: #ffffffa1;
+    color: #ffffff8e;
     font-size: 0.8rem;
     margin-top: 0.5rem;
 }

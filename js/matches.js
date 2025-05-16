@@ -1,34 +1,60 @@
-// matches.js actualizado con número de semana en la card
 document.addEventListener('DOMContentLoaded', () => {
   const matchesContainer = document.getElementById('matchesContainer');
   const toggleButtons = document.querySelectorAll('.toggle-btn');
   const searchInput = document.getElementById('searchInput');
   const weekFilter = document.getElementById('weekFilter');
+  const seasonTypeFilter = document.getElementById('seasonTypeFilter');
 
   let currentLeague = 'nfl';
+  let currentSeasonType = '1';
 
-  function getScheduleUrl(week) {
-    return `https://cdn.espn.com/core/nfl/schedule?xhr=1&year=2025&week=${week}`;
-  }
-
-  async function fetchPlays(gameId) {
-    const url = `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${gameId}/competitions/${gameId}/plays?limit=300`;
-    const res = await fetch(url);
-    return res.json();
+  function getScheduleUrl(week, weekpre) {
+    if (currentSeasonType === '1') {
+      return `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2025&seasontype=1&week=${weekpre}`;
+    } else {
+      return `https://cdn.espn.com/core/nfl/schedule?xhr=1&year=2025&week=${week}`;
+    }
   }
 
   async function fetchWeekData(week) {
-    const url = getScheduleUrl(week);
+    const weekpre = week;
+    const url = getScheduleUrl(week, weekpre);
+    console.log("🌐 URL solicitada:", url);
+
     const res = await fetch(url);
     const data = await res.json();
 
-    const dates = Object.keys(data.content.schedule || {});
-    let games = [];
-    for (const date of dates) {
-      const dayGames = data.content.schedule[date].games || [];
-      games = games.concat(dayGames);
+    if (currentSeasonType === '1') {
+      const events = data.events || [];
+      console.log("✅ Eventos recibidos (Preseason):", events.length, events.map(e => e.name));
+
+      return events.map(evt => {
+        const comp = evt.competitions[0];
+        return {
+          id: evt.id,
+          name: evt.name,
+          date: evt.date,
+          week: { number: parseInt(weekpre) },
+          competitions: [
+            {
+              ...comp,
+              venue: comp.venue || { fullName: 'TBD' },
+              competitors: comp.competitors || [],
+              status: comp.status || {},
+              playByPlayAvailable: comp.playByPlayAvailable ?? false
+            }
+          ]
+        };
+      });
+    } else {
+      const dates = Object.keys(data.content.schedule || {});
+      let games = [];
+      for (const date of dates) {
+        const dayGames = data.content.schedule[date].games || [];
+        games = games.concat(dayGames);
+      }
+      return games;
     }
-    return games;
   }
 
   async function renderMatches() {
@@ -37,9 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let allGames = [];
 
     try {
-      if (selectedWeek === 'all') {
+      if (selectedWeek === 'all' && currentSeasonType !== '1') {
         const weekPromises = [];
-        for (let i = 1; i <= 17; i++) {
+        for (let i = 1; i <= 18; i++) {
           weekPromises.push(fetchWeekData(i));
         }
         const allWeeks = await Promise.all(weekPromises);
@@ -78,47 +104,76 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="teams-container">
           <div class="team">
-            <img src="${away.team.logo}" class="team-logo">
-            <span class="team-name">${away.team.displayName}</span>
-            ${live ? `<span class="score">${away.score || '0'}</span>` : ''}
+            <img src="${away?.team?.logo || ''}" class="team-logo">
+            <span class="team-name">${away?.team?.displayName || 'TBD'}</span>
+            ${live ? `<span class="score">${away?.score || '0'}</span>` : ''}
           </div>
           <span class="vs-text">VS</span>
           <div class="team">
-            <img src="${home.team.logo}" class="team-logo">
-            <span class="team-name">${home.team.displayName}</span>
-            ${live ? `<span class="score">${home.score || '0'}</span>` : ''}
+            <img src="${home?.team?.logo || ''}" class="team-logo">
+            <span class="team-name">${home?.team?.displayName || 'TBD'}</span>
+            ${live ? `<span class="score">${home?.score || '0'}</span>` : ''}
           </div>
         </div>
         <div class="match-details">
-          <p class="match-week">Week ${weekNumber}</p>
+          <p class="match-week">${getWeekLabel(weekNumber)}</p>
           <p class="match-stadium">@ ${comp.venue?.fullName || 'TBD'}</p>
         </div>`;
 
-      matchCard.addEventListener('click', async () => {
-        const existingOverlay = document.querySelector('.pbp-overlay');
-        if (existingOverlay) existingOverlay.remove();
+      if (comp?.playByPlayAvailable) {
+        matchCard.addEventListener('click', async () => {
+          const existingOverlay = document.querySelector('.pbp-overlay');
+          if (existingOverlay) existingOverlay.remove();
 
-        const overlay = document.createElement('div');
-        overlay.className = 'pbp-overlay';
-        overlay.innerHTML = `<div class="pbp-card"><h3>${evt.name}</h3><button class="close-pbp">✖</button><p>Cargando jugadas...</p></div>`;
-        document.body.appendChild(overlay);
+          const overlay = document.createElement('div');
+          overlay.className = 'pbp-overlay';
+          overlay.innerHTML = `<div class="pbp-card"><h3>${evt.name}</h3><button class="close-pbp">✖</button><p>Cargando jugadas...</p></div>`;
+          document.body.appendChild(overlay);
 
-        const closeBtn = overlay.querySelector('.close-pbp');
-        closeBtn.addEventListener('click', () => overlay.remove());
-
-        try {
-          const playsData = await fetchPlays(evt.id);
-          const items = playsData.items || [];
-          const list = items.map(p => `<li><strong>${p.clock.displayValue}</strong> - ${p.text}</li>`).join('');
-          overlay.querySelector('.pbp-card').innerHTML = `<h3>${evt.name}</h3><button class="close-pbp">✖</button><ul class="pbp-list">${list}</ul>`;
           overlay.querySelector('.close-pbp').addEventListener('click', () => overlay.remove());
-        } catch {
-          overlay.querySelector('.pbp-card').innerHTML += `<p>Error loading play-by-play.</p>`;
-        }
-      });
+
+          try {
+            const playsData = await fetch(`https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${evt.id}/competitions/${evt.id}/plays?limit=300`).then(r => r.json());
+            const list = (playsData.items || []).map(p => `<li><strong>${p.clock.displayValue}</strong> - ${p.text}</li>`).join('');
+            overlay.querySelector('.pbp-card').innerHTML = `<h3>${evt.name}</h3><button class="close-pbp">✖</button><ul class="pbp-list">${list}</ul>`;
+          } catch {
+            overlay.querySelector('.pbp-card').innerHTML += `<p>Error loading play-by-play.</p>`;
+          }
+        });
+      }
 
       matchesContainer.appendChild(matchCard);
     });
+  }
+
+  function updateWeekFilterForSeasonType() {
+    const weekFilter = document.getElementById('weekFilter');
+    if (currentSeasonType === '1') {
+      weekFilter.innerHTML = `
+        <option value="1">HOF Game</option>
+        <option value="2">Preseason Week 1</option>
+        <option value="3">Preseason Week 2</option>
+        <option value="4">Preseason Week 3</option>
+      `;
+    } else {
+      weekFilter.innerHTML = `
+        <option value="all" selected>All Weeks</option>
+        ${Array.from({ length: 18 }, (_, i) => `<option value="${i + 1}">Week ${i + 1}</option>`).join('')}
+      `;
+    }
+  }
+
+  function getWeekLabel(weekNumber) {
+    if (currentSeasonType === '1') {
+      switch (parseInt(weekNumber)) {
+        case 1: return 'Hall of Fame Game';
+        case 2: return 'Preseason Week 1';
+        case 3: return 'Preseason Week 2';
+        case 4: return 'Preseason Week 3';
+        default: return 'Preseason';
+      }
+    }
+    return `Week ${weekNumber}`;
   }
 
   toggleButtons.forEach(btn => {
@@ -132,6 +187,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   weekFilter.addEventListener('change', renderMatches);
 
+  seasonTypeFilter.addEventListener('change', () => {
+    currentSeasonType = seasonTypeFilter.value;
+    updateWeekFilterForSeasonType();
+    renderMatches();
+  });
+
   searchInput.addEventListener('input', () => {
     const term = searchInput.value.toLowerCase();
     document.querySelectorAll('.match-card').forEach(card => {
@@ -140,6 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  updateWeekFilterForSeasonType();
   renderMatches();
-  setInterval(renderMatches, 60000);
+  setInterval(() => {
+    const scrollY = window.scrollY; // guarda posición actual
+    renderMatches().then(() => {
+      window.scrollTo(0, scrollY); // restaura posición para que no "salte"
+    });
+  }, 60000);
 });
