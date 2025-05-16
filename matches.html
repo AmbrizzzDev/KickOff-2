@@ -1,81 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="img/logo_t_black.png" media="(prefers-color-scheme: light)">
     <link rel="icon" href="img/logo_t_white.png" media="(prefers-color-scheme: dark)">
-    <title>KickOff - Matches</title>
+    <title>KickOff - Home</title>
     <link href="https://fonts.googleapis.com/css2?family=Lacquer&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/matches.css">
 </head>
 <body>
-    <header class="header">
-        <nav class="navbar">
-            <div class="logo">
-                <img src="img/logo_t_white.png" alt="KickOff Logo">
-                <span class="logo-text">KICKOFF</span>
-            </div>
-            
-            <div class="nav-links" id="navLinks">
-                <a href="index.html">Home</a>
-                <a href="matches.html">Matches</a>
-                <a href="standings.html">Standings</a>
-            </div>
+  <header class="header">
+    <nav class="navbar">
+      <div class="logo">
+        <img src="img/logo_t_white.png" alt="KickOff Logo">
+        <span class="logo-text">KICKOFF</span>
+      </div>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="matches.html">Matches</a>
+        <a href="standings.html">Standings</a>
+      </div>
+      <div class="hamburger" id="hamburger">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </nav>
+  </header>
 
-            <div class="hamburger" id="hamburger">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
-        </nav>
-    </header>
+  <main class="main-content">
+    <section class="matches-section">
+      <h2 class="section-title">Current Matches</h2>
 
-    <main class="main-content">
-        <section class="matches-section">
-            <h2 class="section-title">Current Matches</h2>
-            <div class="league-toggle">
-                <button class="toggle-btn active" data-league="nfl">NFL</button>
-                <button class="toggle-btn" data-league="ncaa">NCAA</button>
-            </div>
+      <div class="league-toggle">
+        <button class="toggle-btn active" data-league="nfl">NFL</button>
+      </div>
 
-            <div class="filters">
-                <div class="search-bar">
-                    <input type="text" placeholder="Search team..." id="searchInput">
-                    <button class="search-btn">🔍</button>
-                </div>
-                <select id="weekFilter" class="week-filter">
-                    <option value="1">Week 1</option>
-                    <option value="2">Week 2</option>
-                    <option value="3">Week 3</option>
-                    <option value="4">Week 4</option>
-                    <option value="5">Week 5</option>
-                    <option value="6">Week 6</option>
-                    <option value="7">Week 7</option>
-                    <option value="8">Week 8</option>
-                    <option value="9">Week 9</option>
-                    <option value="10">Week 10</option>
-                    <option value="11">Week 11</option>
-                    <option value="12">Week 12</option>
-                    <option value="13">Week 13</option>
-                    <option value="14">Week 14</option>
-                    <option value="15">Week 15</option>
-                    <option value="16">Week 16</option>
-                    <option value="17">Week 17</option>
-                    <option value="18">Week 18</option>
-                    <option value="all">All Weeks</option>
-                </select>
-            </div>
+      <div class="filters">
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Search team...">
+          <button class="search-btn">🔍</button>
+        </div>
+        <select id="weekFilter" class="week-filter">
+          <option value="all" selected>All Weeks</option>
+          <option value="1">Week 1</option>
+          <option value="2">Week 2</option>
+          <option value="3">Week 3</option>
+          <option value="4">Week 4</option>
+          <option value="5">Week 5</option>
+          <option value="6">Week 6</option>
+          <option value="7">Week 7</option>
+          <option value="8">Week 8</option>
+          <option value="9">Week 9</option>
+          <option value="10">Week 10</option>
+          <option value="11">Week 11</option>
+          <option value="12">Week 12</option>
+          <option value="13">Week 13</option>
+          <option value="14">Week 14</option>
+          <option value="15">Week 15</option>
+          <option value="16">Week 16</option>
+          <option value="17">Week 17</option>
+          <option value="18">Week 18</option>
+        </select>
+      </div>
 
-            <div class="matches-grid" id="matchesContainer">
-                <!-- JS populated content -->
-            </div>
-        </section>
-    </main>
+      <div id="matchesContainer" class="matches-grid"></div>
+    </section>
+  </main>
 
-
-    <script src="js/matches.js"></script>
-    <script src="js/nav.js"></script>
+  <script src="js/security.js"></script>
+  <script src="js/matches.js"></script>
+  <script src="js/nav.js"></script>
 </body>
 </html>

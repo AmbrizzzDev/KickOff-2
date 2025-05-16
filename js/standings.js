@@ -1,70 +1,62 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const standingsGrid = document.getElementById('standingsTable');
-
-    // Manual standings data
-    const standingsData = {
-        nfl: {
+document.addEventListener('DOMContentLoaded', async () => {
+    const standingsGrid = document.getElementById('standingsGrid');
+    
+    async function fetchStandings() {
+        try {
+            const response = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/standings');
+            const data = await response.json();
             
-        },
-        ncaa: {
-
+            console.log("API Response:", data); // ← Verifica esto en consola
+            
+            if (!data.children || data.children.length === 0) {
+                return { 
+                    status: 'PRE_SEASON',
+                    message: 'La temporada no ha comenzado' 
+                };
+            }
+            return data.children[0].standings.entries;
+        } catch (error) {
+            console.error('Error:', error);
+            return [];
         }
-    };
-
-    function calculatePct(wins, losses, ties) {
-        if (wins + losses + ties === 0) return .000;
-        return ((wins + (ties * 0.5)) / (wins + losses + ties)).toFixed(3);
     }
 
-    function renderStandings(league = 'nfl') {
-        standingsGrid.innerHTML = '';
-        const data = standingsData[league];
+    async function renderStandings() {
+        standingsGrid.innerHTML = '<div class="loading">Loading standings...</div>';
         
-        if (!data || Object.keys(data).length === 0) {
+        try {
+            const standings = await fetchStandings();
+            
+            standingsGrid.innerHTML = '';
+            
+            standings.forEach(team => {
+                const teamCard = document.createElement('div');
+                teamCard.className = 'team-card';
+                teamCard.innerHTML = `
+                    <div class="team-info">
+                        <img src="${team.team.logos[0].href}" 
+                             alt="${team.team.displayName}" 
+                             class="team-logo-sm">
+                        <span>${team.team.displayName}</span>
+                    </div>
+                    <div class="team-stats">
+                        <span>${team.stats[3].value}</span> <!-- Wins -->
+                        <span>${team.stats[4].value}</span> <!-- Losses -->
+                        <span>${team.stats[7].value}</span> <!-- Points For -->
+                        <span>${team.stats[8].value}</span> <!-- Points Against -->
+                    </div>
+                `;
+                standingsGrid.appendChild(teamCard);
+            });
+
+        } catch (error) {
             standingsGrid.innerHTML = `
                 <div class="no-standings-message">
-                    <p>No standings are available at this time ${league === 'nfl' ? 'for NFL' : 'for NCAA'}.</p>
+                    <p>No standings are available at this time.</p>
                     <p>Check back later for updated standings!</p>
                 </div>
             `;
-            return;
         }
-
-        Object.entries(data).forEach(([division, teams]) => {
-            const divisionCard = document.createElement('div');
-            divisionCard.className = 'standings-card';
-            
-            divisionCard.innerHTML = `
-                <h3 class="conference-title">${division}</h3>
-                <div class="division-badge">${league.toUpperCase()}</div>
-                <div class="stats-header">
-                    <div class="team-info">Team</div>
-                    <div class="team-stats">
-                        <span>W</span>
-                        <span>L</span>
-                        <span>T</span>
-                        <span>PCT</span>
-                        <span>PF</span>
-                    </div>
-                </div>
-                ${teams.map(team => `
-                    <div class="team-row">
-                        <div class="team-info">
-                            <img src="${team.logo}" alt="${team.name}" class="team-logo-sm">
-                            <span>${team.name}</span>
-                        </div>
-                        <div class="team-stats">
-                            <span>${team.w}</span>
-                            <span>${team.l}</span>
-                            <span>${team.t}</span>
-                            <span>${calculatePct(team.w, team.l, team.t)}</span>
-                            <span>${team.pf}</span>
-                        </div>
-                    </div>
-                `).join('')}
-            `;
-            standingsGrid.appendChild(divisionCard);
-        });
     }
 
     // Switch between NFL/NCAA

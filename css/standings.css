@@ -155,3 +155,58 @@
         min-width: 400px; /* Ancho mínimo para asegurar que todas las columnas sean visibles */
     }
 }
+
+.standings-grid {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.team-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    align-items: center;
+}
+
+.team-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.team-logo-sm {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.team-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    text-align: center;
+}
+
+.no-standings-message {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    background-clip: padding-box;
+    border-radius: 10px;
+    margin: 2rem auto;
+    max-width: 600px;
+}
+
+.no-standings-message p {
+    margin: 0.5rem 0;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.no-standings-message p:first-child {
+    font-size: 1.3rem;
+    font-weight: 500;
+}

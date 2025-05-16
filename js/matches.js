@@ -1,167 +1,144 @@
+// matches.js actualizado para ocultar marcador si no está en vivo
+
 document.addEventListener('DOMContentLoaded', () => {
-    const matchesContainer = document.getElementById('matchesContainer');
-    const toggleButtons = document.querySelectorAll('.toggle-btn');
-    const searchInput = document.getElementById('searchInput');
-    const weekFilter = document.getElementById('weekFilter');
+  const matchesContainer = document.getElementById('matchesContainer');
+  const toggleButtons = document.querySelectorAll('.toggle-btn');
+  const searchInput = document.getElementById('searchInput');
+  const weekFilter = document.getElementById('weekFilter');
 
-    let matchesData = {};
+  let currentLeague = 'nfl';
 
-    fetch('data/matches.json')
-      .then(res => res.json())
-      .then(data => {
-        matchesData = data;
-        renderMatches(); // solo después de cargar datos
-      })
-      .catch(err => console.error('Error al cargar el JSON:', err));    
+  function getScheduleUrl(week) {
+    return `https://cdn.espn.com/core/nfl/schedule?xhr=1&year=2025&week=${week}`;
+  }
 
-    function renderMatches(league = 'nfl', searchTerm = '', week = 'all') {
-        matchesContainer.innerHTML = '';
-        
-        const filteredMatches = matchesData[league].filter(match => {
-            const matchesSearch = match.teams.some(team => 
-                team.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-            const matchesWeek = week === 'all' || match.week.toString() === week;
-            return matchesSearch && matchesWeek;
-        });
+  async function fetchPlays(gameId) {
+    const url = `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${gameId}/competitions/${gameId}/plays?limit=300`;
+    const res = await fetch(url);
+    return res.json();
+  }
 
-        if (filteredMatches.length === 0) {
-            const noMatchesMessage = document.createElement('div');
-            noMatchesMessage.className = 'no-matches-message';
-            noMatchesMessage.innerHTML = `
-                <p>No matches are scheduled at this time ${league === 'nfl' ? 'for NFL' : 'for NCAA'}.</p>
-                <p>Check back later for upcoming meetings!</p>
-            `;
-            matchesContainer.appendChild(noMatchesMessage);
-            return;
+  async function fetchWeekData(week) {
+    const url = getScheduleUrl(week);
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const dates = Object.keys(data.content.schedule || {});
+    let games = [];
+    for (const date of dates) {
+      const dayGames = data.content.schedule[date].games || [];
+      games = games.concat(dayGames);
+    }
+    return games;
+  }
+
+  async function renderMatches() {
+    matchesContainer.innerHTML = '';
+    const selectedWeek = weekFilter.value;
+    let allGames = [];
+
+    try {
+      if (selectedWeek === 'all') {
+        const weekPromises = [];
+        for (let i = 1; i <= 17; i++) {
+          weekPromises.push(fetchWeekData(i));
         }
-
-        filteredMatches.forEach(match => {
-            const team1Code = getTeamCode(match.teams[0]);
-            const team2Code = getTeamCode(match.teams[1]);
-
-            // Seleccionar logos según la liga
-            const team1Logo = league === 'nfl'
-                ? `img/teams/nfl/${team1Code}.png`
-                : `img/teams/ncaa/${team1Code}.png`;
-
-            const team2Logo = league === 'nfl'
-                ? `img/teams/nfl/${team2Code}.png`
-                : `img/teams/ncaa/${team2Code}.png`;
-
-            const matchCard = document.createElement('div');
-            matchCard.className = `match-card ${match.live ? 'live' : ''}`;
-            matchCard.innerHTML = `
-                <div class="match-header">
-                    ${match.live ? '<div class="live-badge">LIVE</div>' : ''}
-                    <span class="league-tag">${league.toUpperCase()}</span>
-                    <span class="match-time">${match.live ? `${match.quarter} | ${match.timeLeft}` : `${match.date} | ${match.time}`}</span>
-                </div>
-                <div class="teams-container">
-                    <div class="team ${match.possession === team1Code ? 'possessing' : ''}">
-                        <img src="${team1Logo}" alt="${match.teams[0]}" class="team-logo">
-                        <span class="team-name">${match.teams[0]}</span>
-                        ${match.live ? `<span class="score">${match.score[0]}</span>` : ''}
-                    </div>
-                    <span class="vs-text">VS</span>
-                    <div class="team ${match.possession === team2Code ? 'possessing' : ''}">
-                        <img src="${team2Logo}" alt="${match.teams[1]}" class="team-logo">
-                        <span class="team-name">${match.teams[1]}</span>
-                        ${match.live ? `<span class="score">${match.score[1]}</span>` : ''}
-                    </div>
-                </div>
-                ${match.live ? `
-                <div class="live-stats">
-                    <div class="drive-meter">
-                        <span style="width: ${(match.drives[team1Code] / (match.drives[team1Code] + match.drives[team2Code])) * 100}%"></span>
-                    </div>
-                    <div class="game-info">
-                        <span>${match.quarter}</span>
-                        <span>${match.timeLeft}</span>
-                    </div>
-                </div>` : ''}
-                <div class="match-details">
-                    <p class="match-stadium">@ ${match.stadium}</p>
-                </div>
-            `;
-            matchesContainer.appendChild(matchCard);
-        });
+        const allWeeks = await Promise.all(weekPromises);
+        allGames = allWeeks.flat();
+      } else {
+        allGames = await fetchWeekData(selectedWeek);
+      }
+    } catch (e) {
+      matchesContainer.innerHTML = '<p>Error loading data. Please try again later.</p>';
+      return;
     }
 
-    function getTeamCode(teamName) {
-        const teamCodes = {
-            "Arizona Cardinals": "ari",
-            "Atlanta Falcons": "atl",
-            "Baltimore Ravens": "bal",
-            "Buffalo Bills": "buf",
-            "Carolina Panthers": "car",
-            "Chicago Bears": "chi",
-            "Cincinnati Bengals": "cin",
-            "Cleveland Browns": "cle",
-            "Dallas Cowboys": "dal",
-            "Denver Broncos": "den",
-            "Detroit Lions": "det",
-            "Green Bay Packers": "gb",
-            "Houston Texans": "hou",
-            "Indianapolis Colts": "ind",
-            "Jacksonville Jaguars": "jax",
-            "Kansas City Chiefs": "kc",
-            "Las Vegas Raiders": "lv",
-            "Los Angeles Chargers": "lac",
-            "Los Angeles Rams": "lar",
-            "Miami Dolphins": "mia",
-            "Minnesota Vikings": "min",
-            "New England Patriots": "ne",
-            "New Orleans Saints": "no",
-            "New York Giants": "nyg",
-            "New York Jets": "nyj",
-            "Philadelphia Eagles": "phi",
-            "Pittsburgh Steelers": "pit",
-            "San Francisco 49ers": "sf",
-            "Seattle Seahawks": "sea",
-            "Tampa Bay Buccaneers": "tb",
-            "Tennessee Titans": "ten",
-            "Washington Commanders": "wsh",
-
-            // NCAA (puedes agregar más)
-            "Hawai'i": "hawaii",
-            "Stephen F. Austin": "stephenf.austin",
-            "San José State": "sanjoséstate",
-            "St. Francis (PA)": "st.francis(pa)",
-            "Miami (OH)": "miami(oh)",
-            "Alabama A&M": "alabamaa&m",
-            "East Texas A&M": "easttexasa&m",
-            "Texas A&M": "texasa&m",
-            "William & Mary": "william&mary",
-            "Florida A&M": "floridaa&m",
-            "Prairie View A&M": "prairieviewa&m",
-            "North Carolina A&T": "northcarolinaa&t"
-        };
-        return teamCodes[teamName] || teamName.toLowerCase().replace(/[^a-z]/gi, '');
+    if (!allGames.length) {
+      matchesContainer.innerHTML = '<p>No matches available.</p>';
+      return;
     }
 
-    // Event Listeners
-    toggleButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            toggleButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderMatches(btn.dataset.league, searchInput.value, weekFilter.value);
-        });
-    });
+    allGames.forEach(evt => {
+      const comp = evt.competitions[0];
+      const home = comp.competitors.find(c => c.homeAway === 'home');
+      const away = comp.competitors.find(c => c.homeAway === 'away');
+      const status = comp.status || {};
+      const live = status.type?.state === 'in';
+      const d = new Date(evt.date);
+      const date = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
-    searchInput.addEventListener('input', () => {
-        renderMatches(
-            document.querySelector('.toggle-btn.active').dataset.league,
-            searchInput.value,
-            weekFilter.value
-        );
-    });
+      const matchCard = document.createElement('div');
+      matchCard.className = `match-card ${live ? 'live' : ''}`;
+      matchCard.innerHTML = `
+        <div class="match-header">
+          ${live ? '<div class="live-badge">LIVE</div>' : ''}
+          <span class="league-tag">NFL</span>
+          <span class="match-time">${date} | ${time}</span>
+        </div>
+        <div class="teams-container">
+          <div class="team">
+            <img src="${away.team.logo}" class="team-logo">
+            <span class="team-name">${away.team.displayName}</span>
+            ${live ? `<span class="score">${away.score || '0'}</span>` : ''}
+          </div>
+          <span class="vs-text">VS</span>
+          <div class="team">
+            <img src="${home.team.logo}" class="team-logo">
+            <span class="team-name">${home.team.displayName}</span>
+            ${live ? `<span class="score">${home.score || '0'}</span>` : ''}
+          </div>
+        </div>
+        <div class="match-details">
+          <p class="match-stadium">@ ${comp.venue?.fullName || 'TBD'}</p>
+        </div>`;
 
-    weekFilter.addEventListener('change', () => {
-        renderMatches(
-            document.querySelector('.toggle-btn.active').dataset.league,
-            searchInput.value,
-            weekFilter.value
-        );
+      matchCard.addEventListener('click', async () => {
+        const existingOverlay = document.querySelector('.pbp-overlay');
+        if (existingOverlay) existingOverlay.remove();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'pbp-overlay';
+        overlay.innerHTML = `<div class="pbp-card"><h3>${evt.name}</h3><button class="close-pbp">✖</button><p>Cargando jugadas...</p></div>`;
+        document.body.appendChild(overlay);
+
+        const closeBtn = overlay.querySelector('.close-pbp');
+        closeBtn.addEventListener('click', () => overlay.remove());
+
+        try {
+          const playsData = await fetchPlays(evt.id);
+          const items = playsData.items || [];
+          const list = items.map(p => `<li><strong>${p.clock.displayValue}</strong> - ${p.text}</li>`).join('');
+          overlay.querySelector('.pbp-card').innerHTML = `<h3>${evt.name}</h3><button class="close-pbp">✖</button><ul class="pbp-list">${list}</ul>`;
+          overlay.querySelector('.close-pbp').addEventListener('click', () => overlay.remove());
+        } catch {
+          overlay.querySelector('.pbp-card').innerHTML += `<p>Error loading play-by-play.</p>`;
+        }
+      });
+
+      matchesContainer.appendChild(matchCard);
     });
+  }
+
+  toggleButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      toggleButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentLeague = btn.dataset.league;
+      renderMatches();
+    });
+  });
+
+  weekFilter.addEventListener('change', renderMatches);
+
+  searchInput.addEventListener('input', () => {
+    const term = searchInput.value.toLowerCase();
+    document.querySelectorAll('.match-card').forEach(card => {
+      const names = Array.from(card.querySelectorAll('.team-name')).map(n => n.textContent.toLowerCase());
+      card.style.display = names.some(n => n.includes(term)) ? '' : 'none';
+    });
+  });
+
+  renderMatches();
+  setInterval(renderMatches, 60000);
 });
