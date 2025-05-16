@@ -1,5 +1,4 @@
-// matches.js actualizado para ocultar marcador si no está en vivo
-
+// matches.js actualizado con número de semana en la card
 document.addEventListener('DOMContentLoaded', () => {
   const matchesContainer = document.getElementById('matchesContainer');
   const toggleButtons = document.querySelectorAll('.toggle-btn');
@@ -67,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const d = new Date(evt.date);
       const date = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
       const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      const weekNumber = evt.week?.number || 'N/A';
 
       const matchCard = document.createElement('div');
       matchCard.className = `match-card ${live ? 'live' : ''}`;
@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
         <div class="match-details">
+          <p class="match-week">Week ${weekNumber}</p>
           <p class="match-stadium">@ ${comp.venue?.fullName || 'TBD'}</p>
         </div>`;
 

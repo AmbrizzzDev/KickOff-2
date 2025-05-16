@@ -10,7 +10,6 @@
     font-size: 2.5rem;
 }
 
-
 .league-toggle {
     display: flex;
     gap: 1rem;
@@ -121,6 +120,17 @@
     font-family: 'Lacquer', cursive;
 }
 
+.match-week {
+    color: #ffffffa1;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.match-time {
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+}
+
 .teams-container {
     display: flex;
     justify-content: center;
@@ -134,33 +144,7 @@
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    position: relative; /* Necesario para la línea decorativa */
-}
-
-/* Línea decorativa debajo del equipo con posesión */
-.possessing::after {
-    content: '';
-    position: absolute;
-    bottom: -5px; /* Posición de la línea */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%; /* Ancho de la línea */
-    height: 3px; /* Grosor de la línea */
-    background: var(--secondary-color); /* Color de la línea */
-    animation: slideLine 1.5s infinite; /* Animación de la línea */
-}
-
-/* Animación de la línea */
-@keyframes slideLine {
-    0% {
-        width: 80%;
-    }
-    50% {
-        width: 100%;
-    }
-    100% {
-        width: 80%;
-    }
+    position: relative;
 }
 
 .team-logo {
@@ -168,28 +152,40 @@
     height: 60px;
     object-fit: contain;
     transition: all 0.3s;
-    position: relative; /* Necesario para el balón animado */
+    position: relative;
 }
 
-/* Balón animado sobre el logo */
-.possessing .team-logo::after {
-    content: '🏈'; /* Ícono de balón */
+.possessing::after {
+    content: '';
     position: absolute;
-    top: -15px; /* Ajusta la posición vertical del balón */
-    right: -15px; /* Ajusta la posición horizontal del balón */
-    font-size: 1.5rem; /* Tamaño del balón */
-    animation: bounceBall 0.5s infinite alternate; /* Animación de rebote */
-    z-index: 2; /* Asegura que el balón esté sobre el logo */
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 3px;
+    background: var(--secondary-color);
+    animation: slideLine 1.5s infinite;
 }
 
-/* Animación de rebote para el balón */
+.possessing .team-logo::after {
+    content: '🏈';
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    font-size: 1.5rem;
+    animation: bounceBall 0.5s infinite alternate;
+    z-index: 2;
+}
+
+@keyframes slideLine {
+    0% { width: 80%; }
+    50% { width: 100%; }
+    100% { width: 80%; }
+}
+
 @keyframes bounceBall {
-    0% {
-        transform: translateY(0);
-    }
-    100% {
-        transform: translateY(-5px);
-    }
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-5px); }
 }
 
 .team-name {
@@ -218,17 +214,17 @@
 
 .drive-meter {
     height: 5px;
-    background: rgba(255,255,255,0.2); /* Color de fondo de la barra */
+    background: rgba(255,255,255,0.2);
     border-radius: 3px;
     margin: 0.5rem 0;
-    overflow: hidden; /* Asegura que el contenido no se salga */
+    overflow: hidden;
 }
 
 .drive-meter span {
     display: block;
     height: 100%;
-    background: var(--secondary-color); /* Color de la barra de progreso */
-    transition: width 0.5s ease; /* Transición suave */
+    background: var(--secondary-color);
+    transition: width 0.5s ease;
 }
 
 .game-info {
@@ -241,11 +237,6 @@
 .match-details {
     text-align: center;
     margin-top: 1rem;
-}
-
-.match-time {
-    color: var(--secondary-color);
-    font-size: 0.9rem;
 }
 
 .match-stadium {
@@ -271,78 +262,12 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Base */
-.matches-section { padding: 2rem 5%; }
-.section-title { text-align: center; margin-bottom: 2rem; font-size: 2.5rem; font-family:'Lacquer',cursive; color: var(--primary-color); }
-
-/* Toggle */
-.league-toggle { display:flex; justify-content:center; gap:1rem; margin-bottom:2rem; }
-.toggle-btn { padding:.8rem 2rem; border:none; border-radius:25px; background:var(--card-bg); color:var(--text-light); cursor:pointer; transition:0.3s; font-family:'Poppins',sans-serif; }
-.toggle-btn.active { background:linear-gradient(45deg,var(--primary-color),var(--secondary-color)); font-weight:500; }
-
-/* Filters */
-.filters { display:flex; gap:1rem; margin-bottom:2rem; flex-wrap:wrap; }
-.search-bar { display:flex; background:var(--card-bg); border-radius:25px; flex:1; max-width:400px; padding:.5rem 1rem; }
-.search-bar input { flex:1; background:transparent; border:none; color:var(--text-light); padding:.5rem; }
-.search-bar button { background:transparent; border:none; color:var(--text-light); cursor:pointer; }
-.week-filter { padding:.8rem; border:none; border-radius:25px; background:var(--card-bg); color:var(--text-light); font-family:'Poppins',sans-serif; }
-
-/* Grid */
-.matches-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(350px,1fr)); gap:1.5rem; }
-
-/* Card */
-.match-card { background:var(--card-bg); border-radius:15px; padding:1.5rem; position:relative; transition:transform .3s ease; }
-.match-card.live { border:2px solid var(--primary-color); animation:pulseLive 1.5s infinite; }
-.match-card:hover { transform:translateY(-5px); }
-
-/* Header */
-.match-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
-.live-badge { background:var(--primary-color); color:#fff; padding:.3rem 1rem; border-radius:15px; font-size:.8rem; font-weight:bold; }
-.league-tag { background:var(--primary-color); padding:.3rem .8rem; border-radius:15px; font-size:.8rem; font-family:'Lacquer',cursive; }
-.match-time { color:var(--secondary-color); font-size:.9rem; }
-
-/* Teams */
-.teams-container { display:flex; justify-content:center; align-items:center; gap:1rem; margin:1.5rem 0; }
-.team { display:flex; flex-direction:column; align-items:center; gap:.5rem; position:relative; }
-.team-logo { width:60px; height:60px; object-fit:contain; }
-.score { font-size:1.8rem; font-weight:bold; color:var(--secondary-color); }
-.vs-text { font-family:'Lacquer',cursive; font-size:1.5rem; color:var(--secondary-color); }
-
-/* Live Stats */
-.live-stats { margin-top:1rem; background:rgba(255,255,255,0.1); padding:1rem; border-radius:10px; }
-.drive-meter { height:5px; background:rgba(255,255,255,0.2); border-radius:3px; overflow:hidden; }
-.drive-meter span { display:block; height:100%; background:var(--secondary-color); transition:width .5s ease; }
-.game-info { display:flex; justify-content:space-between; font-size:.9rem; color:var(--text-light); }
-
-/* Details */
-.match-details { text-align:center; margin-top:1rem; }
-.match-stadium { color:#888; font-size:.8rem; margin-top:.5rem; }
-
-/* Animations */
-@keyframes pulseLive {
-  0%{box-shadow:0 0 0 0 rgba(255,70,85,0.4);}
-  70%{box-shadow:0 0 0 10px rgba(255,70,85,0);}
-  100%{box-shadow:0 0 0 0 rgba(255,70,85,0);}
-}
-
-/* NCAA Banner */
-.ncaaf-alert .alert-banner {
-  background-color:#fff3cd;
-  color:#856404;
-  border:1px solid #ffeeba;
-  padding:12px;
-  margin-bottom:16px;
-  border-radius:15px;
-  font-size:.95rem;
-  box-shadow:0 2px 4px rgba(0,0,0,0.05);
-}
-
 .team.winner {
     background: rgba(40, 167, 69, 0.1);
     border-radius: 8px;
-  }
-  
-  .pbp-overlay {
+}
+
+.pbp-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.8);
@@ -350,8 +275,9 @@
     justify-content: center;
     align-items: center;
     z-index: 9999;
-  }
-  .pbp-card {
+}
+
+.pbp-card {
     background: var(--card-bg);
     padding: 2rem;
     border-radius: 15px;
@@ -361,16 +287,19 @@
     position: relative;
     max-height: 80vh;
     overflow-y: auto;
-  }
-  .pbp-list {
+}
+
+.pbp-list {
     list-style: none;
     margin-top: 1rem;
     padding: 0;
-  }
-  .pbp-list li {
+}
+
+.pbp-list li {
     margin-bottom: 0.5rem;
-  }
-  .close-pbp {
+}
+
+.close-pbp {
     position: absolute;
     top: 1rem;
     right: 1rem;
@@ -379,4 +308,4 @@
     color: white;
     font-size: 1.5rem;
     cursor: pointer;
-  }
+}

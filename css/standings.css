@@ -28,17 +28,6 @@
     font-family: 'Poppins', sans-serif;
 }
 
-.ncaa-btn {
-    padding: 0.8rem 2rem;
-    border: none;
-    border-radius: 25px;
-    background: var(--card-bg);
-    color: var(--text-light);
-    cursor: pointer;
-    transition: all 0.3s;
-    font-family: 'Poppins', sans-serif;
-}
-
 .toggle-btn.active {
     background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
     font-weight: 500;
