@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="img/logo_t_black.png" media="(prefers-color-scheme: light)">
   <link rel="icon" href="img/logo_t_white.png" media="(prefers-color-scheme: dark)">
-  <title>KickOff - Matches</title>
+  <title>KickOff - News</title>
   <link href="https://fonts.googleapis.com/css2?family=Lacquer&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/matches.css">
+  <link rel="stylesheet" href="css/news.css">
 </head>
 <body>
   <header class="header">
@@ -34,36 +34,12 @@
   </header>
 
   <main class="main-content">
-    <section class="matches-section">
-      <h2 class="section-title">Current Matches</h2>
-
-      <div class="league-toggle">
-        <button class="toggle-btn active" data-league="nfl">NFL</button>
-      </div>
-
-      <div class="filters">
-        <div class="search-bar">
-          <input type="text" id="searchInput" placeholder="Search team...">
-          <button class="search-btn">🔍</button>
-        </div>
-      
-        <select id="weekFilter" class="week-filter"></select>
-      
-        <select id="seasonTypeFilter" class="seasonTypeFilter">
-          <option value="1" selected>Preseason</option>
-          <option value="2">Regular Season</option>
-          <option value="3">Postseason</option>
-        </select>
-      </div>
-      
-
-      <div id="matchesContainer" class="matches-grid"></div>
+    <section class="news-section">
+      <h1 class="section-title">Football News</h1>
+      <div id="newsContainer" class="news-grid"></div>
     </section>
   </main>
 
-
-  <script src="js/matches.js"></script>
-  <script src="js/nav.js"></script>
-  <script src="js/security.js"></script>
+  <script src="js/news.js"></script>
 </body>
 </html>
