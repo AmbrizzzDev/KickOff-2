@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const container = document.getElementById('newsContainer');
-  const NEWS_LIMIT = 50;
+  const NEWS_LIMIT = 28;
 
   // Listado de deportes que NO queremos
   const blacklist = [
