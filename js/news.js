@@ -80,7 +80,7 @@ const bestReveals = [
   {
     team: "Jaguars",
     logo: "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/jax.png",
-    reveal: "Shedule Release Routine",
+    reveal: "Schedule Release Routine",
     link: "https://x.com/Jaguars/status/1922807022606602280",
   },
   {
