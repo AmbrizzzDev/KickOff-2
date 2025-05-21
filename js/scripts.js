@@ -33,3 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update favicon when user changes system theme
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateFavicon);
 });
+
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    <script defer src="/_vercel/insights/script.js"></script>
