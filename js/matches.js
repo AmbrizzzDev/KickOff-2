@@ -11,8 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function getScheduleUrl(week, weekpre) {
     if (currentSeasonType === '1') {
       return `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2025&seasontype=1&week=${weekpre}`;
-    } else {
+    } else if (currentSeasonType === '2') {
       return `https://cdn.espn.com/core/nfl/schedule?xhr=1&year=2025&week=${week}`;
+    } else {
+      return `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2025&seasontype=3&week=${week}`;
     }
   }
 
