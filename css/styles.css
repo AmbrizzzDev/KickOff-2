@@ -209,3 +209,81 @@
     background: var(--primary-color);
     color: white;
 }
+
+.countdown-section {
+  background: #1a1d26;
+  border-radius: 2rem;
+  padding: 2.5rem 2.2rem 2.2rem 2.2rem;
+  box-shadow: 0 4px 32px #0006;
+  text-align: center;
+  /* Cambia el margin: */
+  margin: -10rem auto 2.5rem auto; /* <-- Esto empuja el contador más abajo */
+  max-width: 560px;
+  position: relative;
+  z-index: 1;
+}
+
+.countdown-title {
+  font-size: 2rem;
+  color: var(--secondary-color);
+  margin-bottom: 2rem;
+  font-family: 'Lacquer', cursive, 'Poppins', Arial, sans-serif;
+}
+.countdown-cards {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+  align-items: center;
+}
+.countdown-card {
+  background: #11151a;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px #0003;
+  padding: 1.2rem 0.7rem;
+  min-width: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  transition: transform 0.3s cubic-bezier(.61,1.17,.74,1.12);
+}
+.countdown-card span {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #ff4655;
+  display: inline-block;
+  transition: color 0.2s;
+}
+.countdown-card.small-anim span {
+  animation: flip 0.6s;
+}
+.countdown-card small {
+  font-size: 1.1rem;
+  color: #fff;
+  margin-top: 0.3rem;
+}
+.countdown-colon {
+  font-size: 2.5rem;
+  color: #18f078;
+  margin: 0 0.2rem;
+}
+@media (max-width: 600px) {
+  .countdown-cards {
+    gap: 0.6rem;
+  }
+  .countdown-card {
+    min-width: 55px;
+    padding: 0.6rem 0.2rem;
+  }
+  .countdown-title {
+    font-size: 1.2rem;
+  }
+}
+/* Flip Animation */
+@keyframes flip {
+  0% { transform: rotateX(0deg);}
+  30% { transform: rotateX(80deg);}
+  60% { transform: rotateX(-20deg);}
+  100% { transform: rotateX(0deg);}
+}
+
