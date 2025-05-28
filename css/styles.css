@@ -217,7 +217,7 @@
   box-shadow: 0 4px 32px #0006;
   text-align: center;
   /* Cambia el margin: */
-  margin: -10rem auto 2.5rem auto; /* <-- Esto empuja el contador más abajo */
+  margin: -5rem auto 2.5rem auto; /* <-- Esto empuja el contador más abajo */
   max-width: 560px;
   position: relative;
   z-index: 1;
