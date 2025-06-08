@@ -74,7 +74,7 @@ const bestReveals = [
   {
     team: "Falcons",
     logo: "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/atl.png",
-    reveal: "ATL Kart 25",
+    reveal: "Welcome to ATL Kart",
     link: "https://youtu.be/x7PJLS9NBm0?si=lvNsPf3WXrXghzgU",
   },
   {
