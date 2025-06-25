@@ -217,7 +217,7 @@
   box-shadow: 0 4px 32px #0006;
   text-align: center;
   /* Cambia el margin: */
-  margin: -5rem auto 2.5rem auto; /* <-- Esto empuja el contador más abajo */
+  margin: -12rem auto 2.5rem auto; /* <-- Esto empuja el contador más abajo */
   max-width: 560px;
   position: relative;
   z-index: 1;
@@ -285,5 +285,31 @@
   30% { transform: rotateX(80deg);}
   60% { transform: rotateX(-20deg);}
   100% { transform: rotateX(0deg);}
+}
+
+.support-banner {
+  background-color: rgba(100, 100, 100, 0.2); /* fondo gris opaco */
+  color: var(--text-light);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  margin: 1rem auto;
+  width: fit-content;
+  max-width: 90%;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.support-banner a {
+  color: var(--primary-color);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.support-banner a:hover {
+  text-decoration: none;
+  color: var(--secondary-color);
 }
 
