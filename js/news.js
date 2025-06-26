@@ -81,7 +81,7 @@ const bestReveals = [
     team: "Texans",
     logo: "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/hou.png",
     reveal: "WAZZUPPPPPP",
-    link: "https://youtu.be/ifvSa50l1hQ?si=v3Pd09feZoOS6zdl",
+    link: "https://youtu.be/0GOnzL-UeDI?si=9xu_5W7MbI-ZWdst",
   },
   {
     team: "Commanders",
@@ -117,7 +117,7 @@ const bestReveals = [
     team: "Cardinals",
     logo: "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/ari.png",
     reveal: "18 BARS",
-    link: "https://x.com/AZCardinals/status/1922804169309638687",
+    link: "https://youtu.be/lAEBRihGTps?si=ra9e_3WTphJs6Rpc",
   }
 ];
 
