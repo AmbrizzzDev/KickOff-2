@@ -149,10 +149,17 @@ document.addEventListener('DOMContentLoaded', () => {
         <option value="3">Preseason Week 2</option>
         <option value="4">Preseason Week 3</option>
       `;
-    } else {
+    } else if (currentSeasonType === '2') {
       weekFilter.innerHTML = `
-        <option value="all" selected>All Weeks</option>
         ${Array.from({ length: 18 }, (_, i) => `<option value="${i + 1}">Week ${i + 1}</option>`).join('')}
+        <option value="all">All Weeks</option>
+      `;
+    } else if (currentSeasonType === '3') {
+      weekFilter.innerHTML = `
+        <option value="1">Wild Card</option>
+        <option value="2">Divisional Round</option>
+        <option value="3">Conference Championship</option>
+        <option value="4">Super Bowl</option>
       `;
     }
   }
