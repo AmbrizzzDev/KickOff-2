@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentSeasonType === '1') {
       return `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2025&seasontype=1&week=${weekpre}`;
     } else if (currentSeasonType === '2') {
-      return `https://cdn.espn.com/core/nfl/schedule?xhr=1&year=2025&week=${week}`;
+      return `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2025&seasontype=2&week=${week}`;
     } else {
       return `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2025&seasontype=3&week=${week}`;
     }
@@ -22,42 +22,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const weekpre = week;
     const url = getScheduleUrl(week, weekpre);
     console.log("🌐 URL solicitada:", url);
-
+  
     const res = await fetch(url);
     const data = await res.json();
-
-    if (currentSeasonType === '1') {
-      const events = data.events || [];
-      console.log("✅ Eventos recibidos (Preseason):", events.length, events.map(e => e.name));
-
-      return events.map(evt => {
-        const comp = evt.competitions[0];
-        return {
-          id: evt.id,
-          name: evt.name,
-          date: evt.date,
-          week: { number: parseInt(weekpre) },
-          competitions: [
-            {
-              ...comp,
-              venue: comp.venue || { fullName: 'TBD' },
-              competitors: comp.competitors || [],
-              status: comp.status || {},
-              playByPlayAvailable: comp.playByPlayAvailable ?? false
-            }
-          ]
-        };
-      });
-    } else {
-      const dates = Object.keys(data.content.schedule || {});
-      let games = [];
-      for (const date of dates) {
-        const dayGames = data.content.schedule[date].games || [];
-        games = games.concat(dayGames);
-      }
-      return games;
-    }
+  
+    const events = data.events || [];
+  
+    console.log(`✅ Eventos recibidos (SeasonType ${currentSeasonType}):`, events.length, events.map(e => e.name));
+  
+    return events.map(evt => {
+      const comp = evt.competitions[0];
+      return {
+        id: evt.id,
+        name: evt.name,
+        date: evt.date,
+        week: evt.week || { number: 'N/A' },
+        competitions: [
+          {
+            ...comp,
+            venue: comp.venue || { fullName: 'TBD' },
+            competitors: comp.competitors || [],
+            status: comp.status || {},
+            playByPlayAvailable: comp.playByPlayAvailable ?? false
+          }
+        ]
+      };
+    });
   }
+  
 
   async function renderMatches() {
     matchesContainer.innerHTML = '';
