@@ -1,8 +1,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const container = document.getElementById('newsContainer');
-  const NEWS_LIMIT = 28;
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  const NEWS_LIMIT = 12;
+  const LOAD_INCREMENT = 12;
 
-  // Listado de deportes que NO queremos
+  let currentIndex = 0;
+  let nflHeadlines = [];
+
   const blacklist = [
     'NHL', 'MLB', 'NBA', 'NCAAM', 'NCAAF', 'NASCAR', 'Soccer', 'F1', 'Golf', 'Tennis', 'Boxing'
   ];
@@ -11,14 +15,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const data = await res.json();
   const headlines = data.headlines || [];
 
-  // Filtro más estricto: SOLO noticias NFL, sin mezclas
-  const nflHeadlines = headlines.filter(item => {
+  // Filtrar solo NFL
+  nflHeadlines = headlines.filter(item => {
     if (!item.categories) return false;
-    // Si alguna categoría está en la blacklist, descartamos la noticia
-    const hasBlacklisted = item.categories.some(cat => 
+    const hasBlacklisted = item.categories.some(cat =>
       cat.description && blacklist.includes(cat.description.trim().toUpperCase())
     );
-    // Solo mostramos si NO hay ninguna de la blacklist y SÍ tiene NFL
     const hasNFL = item.categories.some(cat =>
       cat.description && cat.description.trim().toUpperCase() === 'NFL'
     );
@@ -30,33 +32,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  nflHeadlines.slice(0, NEWS_LIMIT).forEach(item => {
-    const img = item.images?.[0]?.url || item.video?.[0]?.posterImages?.default?.href || 'img/placeholder.jpg';
-    const title = item.title || item.headline || 'Untitled';
-    const shortDesc = item.description || '';
-    const link = item.links?.web?.href || '#';
+  function renderNews(from, to) {
+    nflHeadlines.slice(from, to).forEach(item => {
+      const img = item.images?.[0]?.url || item.video?.[0]?.posterImages?.default?.href || 'img/placeholder.jpg';
+      const title = item.title || item.headline || 'Untitled';
+      const shortDesc = item.description || '';
+      const link = item.links?.web?.href || '#';
 
-    // News Card
-    const card = document.createElement('div');
-    card.className = 'news-card';
-    card.innerHTML = `
-      <img src="${img}" alt="News image" class="news-img">
-      <div class="news-content">
-        <h3 class="news-title">${title}</h3>
-        <p class="news-description">${shortDesc}</p>
-        <button class="read-more-btn">Read More</button>
-      </div>
-    `;
+      const card = document.createElement('div');
+      card.className = 'news-card';
+      card.innerHTML = `
+        <img src="${img}" alt="News image" class="news-img">
+        <div class="news-content">
+          <h3 class="news-title">${title}</h3>
+          <p class="news-description">${shortDesc}</p>
+          <button class="read-more-btn">Read More</button>
+        </div>
+      `;
 
-    const btn = card.querySelector('.read-more-btn');
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      window.open(link, '_blank');
+      card.querySelector('.read-more-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        window.open(link, '_blank');
+      });
+
+      container.appendChild(card);
     });
+  }
 
-    container.appendChild(card);
+  // Render inicial
+  renderNews(currentIndex, currentIndex + NEWS_LIMIT);
+  currentIndex += NEWS_LIMIT;
+
+  // Botón Load More
+  loadMoreBtn.addEventListener('click', () => {
+    renderNews(currentIndex, currentIndex + LOAD_INCREMENT);
+    currentIndex += LOAD_INCREMENT;
+
+    if (currentIndex >= nflHeadlines.length) {
+      loadMoreBtn.style.display = 'none';
+    }
   });
 });
+
 
 const bestReveals = [
   {
