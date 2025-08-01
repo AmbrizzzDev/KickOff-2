@@ -193,99 +193,80 @@ allGames.forEach(evt => {
     
   // --- STATS TAB, CORRECT, ENGLISH, ROBUST, SAFE ---
   try {
+    // 1. Pide stats al proxy de Vercel (usa gameId, no event)
     const boxRes = await fetch(`/api/espn-boxscore-cdn?gameId=${evt.id}`);
     const boxData = await boxRes.json();
-    
   
-    if (!boxData || !boxData.boxscore) {
-      overlay.querySelector('.tab-stats').innerHTML = `<pre>No boxscore in response for event ${evt.id}\n\n${JSON.stringify(boxData, null, 2)}</pre>`;
-      return;
-    }
-    const teams = boxData.boxscore.teams || [];
-    if (!teams[0] || !teams[1]) {
-      overlay.querySelector('.tab-stats').innerHTML = `<pre>Teams missing in boxscore for event ${evt.id}\n\n${JSON.stringify(boxData.boxscore, null, 2)}</pre>`;
-      return;
-    }
+    // 2. Busca equipos y stats
+    const teams = boxData.gamepackageJSON?.boxscore?.teams || [];
+    if (teams.length !== 2) throw new Error("No team stats found.");
   
-    // Muestra TODOS los stats disponibles, en tabla antes de intentar graficar
-    let html = '<table style="width:100%;font-size:.97em;margin-bottom:14px;"><tr><th></th>';
-    teams.forEach(t => html += `<th>${t.team.displayName}</th>`);
-    html += '</tr>';
+    // 3. Labels de stats a mostrar (puedes cambiar los que quieras)
+    const statsList = [
+      "Total Yards",
+      "Passing",
+      "Rushing",
+      "Turnovers",
+      "1st Downs"
+    ];
   
-    // Obtener todos los nombres de stats únicos (por 'name')
-    const statKeys = [...new Set(teams.flatMap(t => t.statistics.map(s => s.name)))];
-    statKeys.forEach(key => {
-      html += `<tr><td>${key}</td>`;
-      teams.forEach(t => {
-        const stat = t.statistics.find(s => s.name === key);
-        html += `<td>${stat ? stat.displayValue : '-'}</td>`;
+    // 4. Nombres de equipos
+    const teamNames = teams.map(t => t.team.displayName);
+  
+    // 5. Extrae los valores de cada stat para graficar
+    const values = statsList.map(label =>
+      teams.map(team => {
+        const stat = team.statistics.find(s => s.label === label);
+        // Algunos stats pueden venir como texto o "-"
+        return stat ? parseInt((stat.displayValue || "0").replace(/,/g, '')) || 0 : 0;
+      })
+    );
+  
+    // 6. Inserta el canvas y leyenda
+    overlay.querySelector('.tab-stats').innerHTML = `
+      <canvas id="statsChart" width="320" height="170"></canvas>
+      <div style="text-align:center;margin-top:8px;font-size:.96em;">
+        <span style="color:#2196F3;">${teamNames[0]}</span> vs <span style="color:#EF7C08;">${teamNames[1]}</span>
+      </div>
+    `;
+  
+    // 7. Dibuja la gráfica
+    setTimeout(() => {
+      const ctx = document.getElementById('statsChart').getContext('2d');
+      if (window.statsChartInstance) window.statsChartInstance.destroy();
+      window.statsChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: statsList,
+          datasets: [
+            {
+              label: teamNames[0],
+              data: values.map(v => v[0]),
+              backgroundColor: '#2196F3'
+            },
+            {
+              label: teamNames[1],
+              data: values.map(v => v[1]),
+              backgroundColor: '#EF7C08'
+            }
+          ]
+        },
+        options: {
+          responsive: false,
+          plugins: { legend: { display: true, position: 'top' } },
+          scales: { y: { beginAtZero: true } }
+        }
       });
-      html += '</tr>';
-    });
-    html += '</table>';
+    }, 60);
   
-    // Si hay Chart.js y hay algunos stats, intenta graficar los más conocidos
-    let canGraph = ['totalYards', 'rushingYards', 'passingYards', 'touchdowns', 'turnovers'].every(key => statKeys.includes(key));
-    if (typeof Chart === 'function' && canGraph) {
-      const statsList = [
-        { key: 'totalYards', label: 'Total Yards' },
-        { key: 'rushingYards', label: 'Rushing Yards' },
-        { key: 'passingYards', label: 'Passing Yards' },
-        { key: 'touchdowns', label: 'Touchdowns' },
-        { key: 'turnovers', label: 'Turnovers' }
-      ];
-      const teamNames = teams.map(t => t.team.displayName);
-      const values = statsList.map(stat =>
-        teams.map(team => {
-          const s = t.statistics.find(ss => ss.name === stat.key);
-          return s ? parseInt(s.displayValue.replace(/,/g, '')) || 0 : 0;
-        })
-      );
-  
-      html += `
-        <canvas id="statsChart" width="300" height="165"></canvas>
-        <div style="text-align:center;margin-top:4px;font-size:.92em;">
-          <span style="color:#2196F3;">${teamNames[0]}</span> vs <span style="color:#EF7C08;">${teamNames[1]}</span>
-        </div>
-      `;
-  
-      overlay.querySelector('.tab-stats').innerHTML = html;
-  
-      setTimeout(() => {
-        const ctx = document.getElementById('statsChart').getContext('2d');
-        if (window.statsChartInstance) window.statsChartInstance.destroy();
-        window.statsChartInstance = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: statsList.map(s => s.label),
-            datasets: [
-              {
-                label: teamNames[0],
-                data: values.map(v => v[0]),
-                backgroundColor: '#2196F3'
-              },
-              {
-                label: teamNames[1],
-                data: values.map(v => v[1]),
-                backgroundColor: '#EF7C08'
-              }
-            ]
-          },
-          options: {
-            responsive: false,
-            plugins: { legend: { display: true, position: 'top' } },
-            scales: { y: { beginAtZero: true } }
-          }
-        });
-      }, 60);
-    } else {
-      overlay.querySelector('.tab-stats').innerHTML = html + '<div style="color:#999;font-size:.97em">No graph: Not enough stats or Chart.js missing</div>';
-    }
   } catch (err) {
-    overlay.querySelector('.tab-stats').innerHTML = `<pre>Error: ${err.message}\n${err.stack}</pre>`;
+    overlay.querySelector('.tab-stats').innerHTML = `
+      <div style="padding:24px;text-align:center;">
+        <b>No stats available.</b>
+        <br><small>${err.message}</small>
+      </div>`;
   }
   
-
 });
 
     

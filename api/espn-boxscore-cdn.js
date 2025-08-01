@@ -1,4 +1,3 @@
-// /api/espn-boxscore-cdn.js
 export default async function handler(req, res) {
   const { gameId } = req.query;
   if (!gameId) return res.status(400).json({ error: "Missing gameId" });
