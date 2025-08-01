@@ -336,31 +336,34 @@ let playerStatsHTML = "";
 categories.forEach(cat => {
   playerStatsHTML += `<div class="player-stats-section"><h3>${cat.label}</h3>`;
   playerStats.forEach((t, i) => {
-    // Busca la categoría de estadísticas correspondiente
-    const statObj = t.categories.find(s => (s.name || s.displayName)?.toLowerCase() === cat.key);
+    // ESPN cambia el key: a veces name, a veces displayName
+    const statObj = t.categories.find(s => 
+      (s.name && s.name.toLowerCase() === cat.key) ||
+      (s.displayName && s.displayName.toLowerCase() === cat.label.toLowerCase())
+    );
     playerStatsHTML += `<div class="team-name" style="color:${teamColors[i]}">${t.team}</div>`;
     playerStatsHTML += `<table class="player-stats-table"><thead><tr><th>Player</th>`;
     cat.cols.forEach(col => playerStatsHTML += `<th>${col}</th>`);
     playerStatsHTML += `</tr></thead><tbody>`;
-    if (statObj && statObj.names && statObj.labels && statObj.statistics) {
-      statObj.names.forEach((player, idx) => {
-        playerStatsHTML += `<tr><td>${player}</td>`;
+    if (statObj && Array.isArray(statObj.names) && Array.isArray(statObj.labels) && Array.isArray(statObj.statistics)) {
+      for (let idx = 0; idx < statObj.names.length; idx++) {
+        playerStatsHTML += `<tr><td>${statObj.names[idx]}</td>`;
         cat.cols.forEach(col => {
           const colIdx = statObj.labels.indexOf(col);
-          let stat = (colIdx !== -1 && statObj.statistics[colIdx]) ? statObj.statistics[colIdx][idx] : '-';
+          let stat = (colIdx !== -1 && Array.isArray(statObj.statistics[colIdx])) ? statObj.statistics[colIdx][idx] : '-';
           if (stat === undefined) stat = '-';
           playerStatsHTML += `<td>${stat}</td>`;
         });
         playerStatsHTML += `</tr>`;
-      });
+      }
     } else {
-      // Si no hay datos para esa categoría
       playerStatsHTML += `<tr><td colspan="${cat.cols.length+1}" style="text-align:center;">-</td></tr>`;
     }
     playerStatsHTML += `</tbody></table>`;
   });
   playerStatsHTML += `</div>`;
 });
+
       
         overlay.querySelector('.tab-stats').innerHTML = `
           ${teamStatsHTML}
