@@ -259,17 +259,6 @@
     100% { box-shadow: 0 0 0 0 rgba(255,70,85,0); }
 }
 
-.ncaaf-alert .alert-banner {
-    background-color: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeeba;
-    padding: 12px;
-    margin-bottom: 16px;
-    border-radius: 15px;
-    font-size: 0.95rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
 .team.winner {
     background: rgba(40, 167, 69, 0.1);
     border-radius: 8px;
@@ -372,4 +361,129 @@
     border: 2px solid #EF7C08;
     letter-spacing: 1.5px;
 }
-   
+
+.team-stats-chart {
+    background: linear-gradient(90deg, #232B42 0%, #102035 100%);
+    border-radius: 16px;
+    padding: 20px 12px 16px 12px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 10px #0003;
+  }
+  .team-stats-row {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-bottom: 10px;
+    font-size: 1.04em;
+    gap: 10px;
+  }
+  .team-stats-row:last-child { margin-bottom: 0; }
+
+  .stat-value.teamB {
+    text-align: left;
+    order: 3;
+  }
+  .bar {
+    position: absolute;
+    left: 80px; right: 80px; top: 50%;
+    transform: translateY(-50%);
+    height: 8px;
+    width: auto;
+    background: #162040;
+    border-radius: 5px;
+    z-index: 1;
+  }
+  .bar-a, .bar-b {
+    position: absolute;
+    top: 0; height: 100%;
+    border-radius: 5px;
+  }
+  .team-stats-row {
+    display: flex;
+    align-items: center;
+    font-size: 1.01em;
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    flex: 1 1 110px;
+    text-align: center;
+    color: #cfd8dc;
+    font-weight: 500;
+    font-size: .97em;
+  }
+  .stat-value {
+    min-width: 36px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .bar {
+    flex: 1 1 110px;
+    display: flex;
+    height: 7px;
+    background: #232f41;
+    border-radius: 4px;
+    margin: 0 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-a {
+    height: 100%;
+    transition: width .3s;
+  }
+  .bar-b {
+    height: 100%;
+    transition: width .3s;
+  }
+  
+  .team-stats-row:hover .bar { box-shadow: 0 0 4px #fff8,0 2px 8px #0005; }
+  
+  .player-stats-section {
+    background: #161f33;
+    border-radius: 14px;
+    padding: 14px 10px 16px 10px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 10px #0002;
+  }
+  .player-stats-section h3 {
+    font-size: 1.08em;
+    color: #fff;
+    margin-bottom: 4px;
+    margin-top: 2px;
+    letter-spacing: 1px;
+  }
+  .team-name-stats {
+    color: #EF7C08;
+    font-size: 1.01em;
+    font-weight: bold;
+    margin-top: 4px;
+    margin-bottom: 3px;
+  }
+  .player-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    font-size: 0.98em;
+  }
+  .player-stats-table th,
+  .player-stats-table td {
+    padding: 2px 4px;
+    text-align: center;
+    color: #d1d5db;
+  }
+  .player-stats-table th {
+    font-weight: bold;
+    color: #fff;
+    border-bottom: 1px solid #31405f;
+  }
+  .player-stats-table td:first-child,
+  .player-stats-table th:first-child {
+    text-align: left;
+  }
+  @media (max-width:600px) {
+    .team-stats-chart, .player-stats-section {
+      padding: 8px 3px 10px 3px;
+    }
+    .stat-label { font-size: 0.93em;}
+    .player-stats-table { font-size: 0.94em;}
+  }
+  
