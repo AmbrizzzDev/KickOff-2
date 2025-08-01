@@ -206,16 +206,18 @@ allGames.forEach(evt => {
 
       // --- STATS TAB ---
       try {
-        // Usa la misma ruta que ya usas para obtener boxscore
+        // Usa la ruta de tu proxy a la CDN, o directo si es local
         const boxRes = await fetch(`/api/espn-boxscore-cdn?gameId=${evt.id}`);
         const boxData = await boxRes.json();
-        const teams = boxData.gamepackageJSON?.boxscore?.teams || [];
-        if (teams.length !== 2) throw new Error("No team stats found.");
+      
+        const box = boxData.gamepackageJSON?.boxscore;
+        const teams = box?.teams || [];
+        if (!teams[0] || !teams[1]) throw new Error("No team stats found.");
+      
         const teamNames = teams.map(t => t.team.displayName);
         const teamColors = ['#EF7C08', '#2196F3'];
       
         // --- TEAM STATS BAR ---
-        // Define los stats a mostrar y cómo extraerlos (key: label, statName)
         const teamStatsDefs = [
           { label: 'Plays', key: 'totalOffensivePlays' },
           { label: '3rd Down Efficiency', key: 'thirdDownEff' },
@@ -230,13 +232,11 @@ allGames.forEach(evt => {
           { label: 'Time of Possession', key: 'possessionTime', isTime: true }
         ];
       
-        // Encuentra el valor real, o "-" si no hay
         const getStatValue = (team, key, isPenalty, isTime) => {
-          let stat = team.statistics.find(s => s.name === key || s.label === key);
+          let stat = team.statistics?.find(s => s.name === key || s.label === key);
           if (!stat) {
             if (isPenalty) {
-              // Penalties (ejemplo: '2-10' -> 2 y 10)
-              stat = team.statistics.find(s => s.name === "totalPenaltiesYards");
+              stat = team.statistics?.find(s => s.name === "totalPenaltiesYards");
               return stat ? (stat.displayValue || "-").split('-') : ['-', '-'];
             }
             return "-";
@@ -245,14 +245,12 @@ allGames.forEach(evt => {
           return stat.displayValue || "-";
         };
       
-        // Render de barra comparativa
         let teamStatsHTML = `<div class="team-stats-chart"><div style="text-align:center;color:#fff;font-size:1.12em;margin-bottom:6px;font-weight:600;">Team Stats</div>`;
         teamStatsDefs.forEach(def => {
           let v0 = getStatValue(teams[0], def.key, def.isPenalty, def.isTime);
           let v1 = getStatValue(teams[1], def.key, def.isPenalty, def.isTime);
           let statLabel = def.label;
           let valA = v0, valB = v1;
-          // Formatea penalties
           if (def.isPenalty) {
             valA = v0[0]; valB = v1[0];
             statLabel = "Penalties";
@@ -260,10 +258,8 @@ allGames.forEach(evt => {
           if (def.label === "Time of Possession") {
             valA = v0; valB = v1;
           }
-          // Valores numéricos para barra
           let numA = isNaN(Number(valA)) ? 0 : Number(valA);
           let numB = isNaN(Number(valB)) ? 0 : Number(valB);
-          // Time of possession -> calcula total segundos para la barra
           if (def.isTime) {
             const tSec = s => {
               if (typeof s !== 'string' || !s.includes(':')) return 0;
@@ -272,18 +268,15 @@ allGames.forEach(evt => {
             };
             numA = tSec(valA); numB = tSec(valB);
           }
-          // Calcula porcentaje para barra (evita división por 0)
           let pctA = 0, pctB = 0, sum = numA + numB;
           if (sum > 0) {
             pctA = Math.round((numA / sum) * 100);
             pctB = Math.round((numB / sum) * 100);
           }
-          // Para ratios, usa 100 de base (no suma de ambos)
           if (def.label === "Yards per Play") {
             pctA = Math.min(100, Math.round(numA * 10));
             pctB = Math.min(100, Math.round(numB * 10));
           }
-          // HTML fila de barra
           teamStatsHTML += `
             <div class="team-stats-row">
               <span class="stat-value teamA" style="color:${teamColors[0]}">${valA}</span>
@@ -295,16 +288,17 @@ allGames.forEach(evt => {
               </div>
             </div>
           `;
-          // Penalty Yards como fila extra
           if (def.isPenalty) {
+            let yardsA = parseInt(v0[1]) || 0, yardsB = parseInt(v1[1]) || 0;
+            let yardsSum = yardsA + yardsB || 1;
             teamStatsHTML += `
               <div class="team-stats-row">
                 <span class="stat-value teamA" style="color:${teamColors[0]}">${v0[1]}</span>
                 <span class="stat-label">Penalty Yards</span>
                 <span class="stat-value teamB" style="color:${teamColors[1]}">${v1[1]}</span>
                 <div class="bar">
-                  <div class="bar-a" style="width:${Math.round((parseInt(v0[1])/(parseInt(v0[1])+parseInt(v1[1])||1))*100)}%;background:${teamColors[0]}"></div>
-                  <div class="bar-b" style="width:${Math.round((parseInt(v1[1])/(parseInt(v0[1])+parseInt(v1[1])||1))*100)}%;background:${teamColors[1]}"></div>
+                  <div class="bar-a" style="width:${Math.round((yardsA/yardsSum)*100)}%;background:${teamColors[0]}"></div>
+                  <div class="bar-b" style="width:${Math.round((yardsB/yardsSum)*100)}%;background:${teamColors[1]}"></div>
                 </div>
               </div>
             `;
@@ -312,8 +306,7 @@ allGames.forEach(evt => {
         });
         teamStatsHTML += "</div>";
       
-        // --- PLAYER STATS TABLES (por tipo, por equipo) ---
-        // Obtiene datos de players para cada equipo
+        // --- PLAYER STATS TABLES ---
         const categories = [
           { key: "passing", label: "Passing", cols: ["C/ATT", "YDS", "AVG", "TD", "INT"] },
           { key: "rushing", label: "Rushing", cols: ["CAR", "YDS", "AVG", "TD", "LONG"] },
@@ -321,31 +314,35 @@ allGames.forEach(evt => {
           { key: "kicking", label: "Kicking", cols: ["FG", "PCT", "LONG", "XP", "PTS"] },
           { key: "punting", label: "Punting", cols: ["PUNTS", "AVG", "I20", "TD", "LONG"] }
         ];
-        // players aparece en: boxData.gamepackageJSON.boxscore.players -> array de objetos por equipo
-        const playerStats = (boxData.gamepackageJSON?.boxscore?.players || []).map(t => ({
+        const playerStats = (box?.players || []).map(t => ({
           team: t.team?.displayName || '',
           categories: t.statistics || []
         }));
       
         let playerStatsHTML = "";
         categories.forEach(cat => {
-          // Para cada categoría (Passing, Rushing, etc.)
           playerStatsHTML += `<div class="player-stats-section"><h3>${cat.label}</h3>`;
           playerStats.forEach((t, i) => {
-            // Busca la categoría para este equipo
-            const statObj = t.categories.find(s => s.name.toLowerCase() === cat.key);
-            if (!statObj || !statObj.labels) return;
+            const statObj = t.categories.find(s => s.name?.toLowerCase() === cat.key);
+            if (!statObj || !statObj.labels) {
+              playerStatsHTML += `<div class="team-name" style="color:${teamColors[i]}">${t.team}</div>`;
+              playerStatsHTML += `<table class="player-stats-table"><thead><tr><th>Player</th>`;
+              cat.cols.forEach(col => playerStatsHTML += `<th>${col}</th>`);
+              playerStatsHTML += `</tr></thead><tbody><tr><td colspan="${cat.cols.length+1}" style="text-align:center;">No data</td></tr></tbody></table>`;
+              return;
+            }
             playerStatsHTML += `<div class="team-name" style="color:${teamColors[i]}">${t.team}</div>`;
             playerStatsHTML += `<table class="player-stats-table"><thead><tr><th>Player</th>`;
             cat.cols.forEach(col => playerStatsHTML += `<th>${col}</th>`);
             playerStatsHTML += `</tr></thead><tbody>`;
             statObj.labels.forEach((_, idx) => {
-              const player = statObj.names[idx] || '-';
+              const player = statObj.names?.[idx] || '-';
               playerStatsHTML += `<tr><td>${player}</td>`;
               cat.cols.forEach(col => {
-                // Busca columna en statObj.labels, pone '-' si no hay
                 const colIdx = statObj.labels.indexOf(col);
-                playerStatsHTML += `<td>${colIdx !== -1 ? statObj.statistics[colIdx][idx] || '-' : '-'}</td>`;
+                let stat = colIdx !== -1 ? statObj.statistics?.[colIdx]?.[idx] : '-';
+                if (stat === undefined) stat = '-';
+                playerStatsHTML += `<td>${stat}</td>`;
               });
               playerStatsHTML += `</tr>`;
             });
@@ -354,7 +351,6 @@ allGames.forEach(evt => {
           playerStatsHTML += `</div>`;
         });
       
-        // RENDER FINAL
         overlay.querySelector('.tab-stats').innerHTML = `
           ${teamStatsHTML}
           ${playerStatsHTML}
@@ -362,6 +358,7 @@ allGames.forEach(evt => {
       } catch (err) {
         overlay.querySelector('.tab-stats').innerHTML = `<p style="padding:32px;text-align:center;">No stats available.<br><small>${err.message}</small></p>`;
       }
+      
       
     });
   }
