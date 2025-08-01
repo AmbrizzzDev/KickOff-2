@@ -77,10 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // ...el resto de tu código igual
-
-// ... Lo de arriba igual ...
-
 allGames.forEach(evt => {
   const comp = evt.competitions[0];
   const home = comp.competitors.find(c => c.homeAway === 'home');
@@ -200,7 +196,7 @@ allGames.forEach(evt => {
               <span>${p.text}</span>
             </li>`;
         }).join('');
-        overlay.querySelector('.tab-pbp').innerHTML = `<ul style="margin:0;padding:0 0 0 10px;list-style:none;">${list}</ul>`;
+        overlay.querySelector('.tab-pbp').innerHTML = `<ul class="pbp-list" style="margin:0;padding:0 0 0 10px;list-style:none;">${list}</ul>`;
       } catch {
         overlay.querySelector('.tab-pbp').innerHTML = `<p>Error loading plays.</p>`;
       }
