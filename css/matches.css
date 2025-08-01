@@ -275,45 +275,86 @@
     border-radius: 8px;
 }
 
-.pbp-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
+.pbp-list .highlight-td { 
+    background: #ffe0b2; 
+    border-left: 4px solid #ff9800; 
+    font-weight:bold; 
 }
 
-.pbp-card {
-    background: var(--card-bg);
-    padding: 2rem;
-    border-radius: 15px;
+.pbp-list .highlight-int { 
+    background: #ffcccb; 
+    border-left: 4px solid #d32f2f; 
+    font-weight:bold; 
+}
+
+.pbp-list .highlight-fum { 
+    background: #fff9c4; 
+    border-left: 4px solid #fbc02d; 
+    font-weight:bold; 
+}
+
+.pbp-list .highlight-fg { 
+    background: #c8e6c9; 
+    border-left: 4px solid #388e3c; 
+    font-weight:bold; 
+}
+
+.pbp-card { 
     max-width: 500px;
-    width: 90%;
-    color: white;
-    position: relative;
-    max-height: 80vh;
+    min-width: 0;
+    width: 96vw;
+    padding: 16px 8px 10px 8px; 
+    margin: auto; 
+    background: #15151a; 
+    color: #fff; 
+    border-radius: 1rem; 
+    box-shadow: 0 2px 32px #000a; 
+    position:relative;
+}
+
+.pbp-overlay { 
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0; 
+    background:#000b; 
+    z-index:9999;
+    display:flex;
+    align-items:center;
+    justify-content:center; 
+}
+.tabs { 
+    display:flex; 
+    gap:.5rem; 
+    margin-bottom:.5rem; 
+}
+.tab-btn { 
+    padding:.5rem 1.2rem; 
+    border-radius:.7rem; 
+    background:#232332; 
+    border:none; 
+    color:#fff; 
+    cursor:pointer; 
+    font-weight:bold;
+}
+.tab-btn.active { 
+    background: #0084ff; 
+    color: #fff;
+}
+.tab-content { 
+    min-height:160px;
+    min-height: 110px;
+    max-height: 500px;
     overflow-y: auto;
 }
-
-.pbp-list {
-    list-style: none;
-    margin-top: 1rem;
-    padding: 0;
-}
-
-.pbp-list li {
-    margin-bottom: 0.5rem;
-}
-
-.close-pbp {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
+.close-pbp { 
+    position:absolute;
+    top:1rem;
+    right:1rem;
+    background:none;
+    border:none;
+    color:#fff;
+    font-size:1.3rem;
+    cursor:pointer; 
 }
