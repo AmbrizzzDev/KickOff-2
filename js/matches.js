@@ -193,7 +193,7 @@ allGames.forEach(evt => {
     
   // --- STATS TAB, CORRECT, ENGLISH, ROBUST, SAFE ---
   try {
-    const boxRes = await fetch(`/api/espn-boxscore?event=${evt.id}`);
+    const boxRes = await fetch(`/api/espn-boxscore-cdn?gameId=${evt.id}`);
     const boxData = await boxRes.json();
   
     if (!boxData || !boxData.boxscore) {
