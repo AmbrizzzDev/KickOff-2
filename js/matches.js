@@ -79,41 +79,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ...el resto de tu código igual
 
+// ... Lo de arriba igual ...
+
 allGames.forEach(evt => {
   const comp = evt.competitions[0];
   const home = comp.competitors.find(c => c.homeAway === 'home');
   const away = comp.competitors.find(c => c.homeAway === 'away');
   const status = comp.status || {};
-  const live = status.type?.state === 'in';
+  const isLive = status.type?.state === 'in';
+  const isFinal = status.type?.state === 'post';
   const d = new Date(evt.date);
   const date = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   const weekNumber = evt.week?.number || 'N/A';
 
-  // NUEVO: Si el partido está en vivo, muestra cuarto y tiempo
+  // Time display: cuarto y tiempo si está en vivo
   let timeDisplay = `${date} | ${time}`;
-  if (live && status.period && status.displayClock) {
+  if (isLive && status.period && status.displayClock) {
     timeDisplay = `Q${status.period} • ${status.displayClock}`;
   }
 
+  // Status badge: LIVE o FINAL
+  let statusBadge = '';
+  if (isLive) statusBadge = '<div class="live-badge">LIVE</div>';
+  else if (isFinal) statusBadge = '<div class="final-badge">FINAL</div>';
+
   const matchCard = document.createElement('div');
-  matchCard.className = `match-card ${live ? 'live' : ''}`;
+  matchCard.className = `match-card ${isLive ? 'live' : ''} ${isFinal ? 'final' : ''}`;
   matchCard.innerHTML = `
     <div class="match-header">
-      ${live ? '<div class="live-badge">LIVE</div>' : ''}
+      ${statusBadge}
       <span class="match-time">${timeDisplay}</span>
     </div>
     <div class="teams-container">
       <div class="team">
         <img src="${away?.team?.logo || ''}" class="team-logo">
         <span class="team-name">${away?.team?.displayName || 'TBD'}</span>
-        ${live ? `<span class="score">${away?.score || '0'}</span>` : ''}
+        <span class="score">${away?.score ?? '0'}</span>
       </div>
       <span class="vs-text">VS</span>
       <div class="team">
         <img src="${home?.team?.logo || ''}" class="team-logo">
         <span class="team-name">${home?.team?.displayName || 'TBD'}</span>
-        ${live ? `<span class="score">${home?.score || '0'}</span>` : ''}
+        <span class="score">${home?.score ?? '0'}</span>
       </div>
     </div>
     <div class="match-details">
@@ -121,10 +129,9 @@ allGames.forEach(evt => {
       <p class="match-stadium">@ ${comp.venue?.fullName || 'TBD'}</p>
     </div>`;
 
-  // Solo abrir el modal si está en vivo
-  if (comp?.playByPlayAvailable && live) {
+  // Permite modal tanto LIVE como FINAL
+  if (comp?.playByPlayAvailable && (isLive || isFinal)) {
     matchCard.addEventListener('click', async () => {
-      // Solo para partidos en vivo
       const existingOverlay = document.querySelector('.pbp-overlay');
       if (existingOverlay) existingOverlay.remove();
     
@@ -142,14 +149,13 @@ allGames.forEach(evt => {
         </div>
       `;
       document.body.appendChild(overlay);
-    
-      // Cerrar modal
+
       overlay.addEventListener('click', e => {
         if (e.target.classList.contains('close-pbp') || e.target.classList.contains('pbp-overlay')) {
           overlay.remove();
         }
       });
-    
+
       // Cambiar tabs
       const tabBtns = overlay.querySelectorAll('.tab-btn');
       tabBtns.forEach(btn => {
@@ -160,21 +166,28 @@ allGames.forEach(evt => {
           overlay.querySelector('.tab-stats').style.display = btn.dataset.tab === 'stats' ? '' : 'none';
         });
       });
-    
-      // Play-by-play con jugadas clave simples
+
+      // Play-by-play highlights
       try {
         const playsData = await fetch(`https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${evt.id}/competitions/${evt.id}/plays?limit=300`).then(r => r.json());
         const plays = playsData.items || [];
         const highlightWords = [
-          { word: 'touchdown', label: 'TD', style: 'color:#fff;background:#EF7C08;padding:0.1em 0.5em;border-radius:6px;font-size:.93em;' },
-          { word: 'interception', label: 'INT', style: 'color:#fff;background:#C82333;padding:0.1em 0.5em;border-radius:6px;font-size:.93em;' },
-          { word: 'fumble', label: 'FUM', style: 'color:#333;background:#FFEE5C;padding:0.1em 0.5em;border-radius:6px;font-size:.93em;' },
-          { word: 'field goal', label: 'FG', style: 'color:#fff;background:#13B355;padding:0.1em 0.5em;border-radius:6px;font-size:.93em;' }
+          { word: 'two-minute warning', label: '2MW', style: 'color:#fff;background:#1b102f;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #7521f3;' },
+          { word: 'penalty', label: 'FLAG', style: 'color:#fff;background:#2f2a10;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f3d321;' },
+          { word: 'end game', label: 'FINAL', style: 'color:#fff;background:#10162f;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #EF7C08;' },
+          { word: 'touchdown', label: 'TD', style: 'color:#fff;background:#2f1e10;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f38321;' },          { word: 'fumble', label: 'FUM', style: 'color:#222;background:#FFEE5C;padding:0.1em 0.5em;border-radius:6px;font-weight:bold;font-size:.93em;' },
+          { word: 'intercepted', label: 'INT', style: 'color:#fff;background:#C82333;padding:0.1em 0.5em;border-radius:6px;font-weight:bold;font-size:.93em;' },
+          { word: 'timeout #', label: 'TO', style: 'color:#fff;background:#003366;padding:0.1em 0.5em;border-radius:6px;font-size:.91em;' },
+          { word: 'official timeout', label: 'O.TO', style: 'color:#222;background:#d1d5db;padding:0.1em 0.5em;border-radius:6px;font-size:.91em;font-weight:normal;' },
+          { word: 'end quarter', label: 'END Q', style: 'color:#fff;background:#10162f;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #2196f3;' },
+          { word: 'field goal is good', label: 'FG', style: 'color:#fff;background:#13B355;padding:0.1em 0.5em;border-radius:6px;font-size:.93em;font-weight:bold;' },
+          { word: 'field goal is no good', label: 'FG X', style: 'color:#fff;background:#C82333;padding:0.1em 0.5em;border-radius:6px;font-size:.93em;font-weight:bold;' }
         ];
         const list = plays.reverse().map(p => {
           let tag = '';
+          const playText = (p.text || '').toLowerCase();
           for (let h of highlightWords) {
-            if (p.text && p.text.toLowerCase().includes(h.word)) {
+            if (playText.includes(h.word)) {
               tag = `<span style="${h.style}">${h.label}</span>`;
               break;
             }
@@ -188,92 +201,79 @@ allGames.forEach(evt => {
         }).join('');
         overlay.querySelector('.tab-pbp').innerHTML = `<ul style="margin:0;padding:0 0 0 10px;list-style:none;">${list}</ul>`;
       } catch {
-        overlay.querySelector('.tab-pbp').innerHTML = `<p>Error cargando jugadas.</p>`;
+        overlay.querySelector('.tab-pbp').innerHTML = `<p>Error loading plays.</p>`;
       }
-    
-  // --- STATS TAB, CORRECT, ENGLISH, ROBUST, SAFE ---
-  try {
-    // 1. Pide stats al proxy de Vercel (usa gameId, no event)
-    const boxRes = await fetch(`/api/espn-boxscore-cdn?gameId=${evt.id}`);
-    const boxData = await boxRes.json();
-  
-    // 2. Busca equipos y stats
-    const teams = boxData.gamepackageJSON?.boxscore?.teams || [];
-    if (teams.length !== 2) throw new Error("No team stats found.");
-  
-    // 3. Labels de stats a mostrar (puedes cambiar los que quieras)
-    const statsList = [
-      "Total Yards",
-      "Passing",
-      "Rushing",
-      "Turnovers",
-      "1st Downs"
-    ];
-  
-    // 4. Nombres de equipos
-    const teamNames = teams.map(t => t.team.displayName);
-  
-    // 5. Extrae los valores de cada stat para graficar
-    const values = statsList.map(label =>
-      teams.map(team => {
-        const stat = team.statistics.find(s => s.label === label);
-        // Algunos stats pueden venir como texto o "-"
-        return stat ? parseInt((stat.displayValue || "0").replace(/,/g, '')) || 0 : 0;
-      })
-    );
-  
-    // 6. Inserta el canvas y leyenda
-    overlay.querySelector('.tab-stats').innerHTML = `
-      <canvas id="statsChart" width="320" height="170"></canvas>
-      <div style="text-align:center;margin-top:8px;font-size:.96em;">
-        <span style="color:#2196F3;">${teamNames[0]}</span> vs <span style="color:#EF7C08;">${teamNames[1]}</span>
-      </div>
-    `;
-  
-    // 7. Dibuja la gráfica
-    setTimeout(() => {
-      const ctx = document.getElementById('statsChart').getContext('2d');
-      if (window.statsChartInstance) window.statsChartInstance.destroy();
-      window.statsChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: statsList,
-          datasets: [
-            {
-              label: teamNames[0],
-              data: values.map(v => v[0]),
-              backgroundColor: '#2196F3'
-            },
-            {
-              label: teamNames[1],
-              data: values.map(v => v[1]),
-              backgroundColor: '#EF7C08'
-            }
-          ]
-        },
-        options: {
-          responsive: false,
-          plugins: { legend: { display: true, position: 'top' } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }, 60);
-  
-  } catch (err) {
-    overlay.querySelector('.tab-stats').innerHTML = `
-      <div style="padding:24px;text-align:center;">
-        <b>No stats available.</b>
-        <br><small>${err.message}</small>
-      </div>`;
-  }
-  
-});
 
-    
+      // --- STATS TAB ---
+      try {
+        const boxRes = await fetch(`/api/espn-boxscore-cdn?gameId=${evt.id}`);
+        const boxData = await boxRes.json();
+        const teams = boxData.gamepackageJSON?.boxscore?.teams || [];
+        if (teams.length !== 2) throw new Error("No team stats found.");
+
+        const statsList = [
+          "Total Yards",
+          "Passing",
+          "Rushing",
+          "Turnovers",
+          "1st Downs"
+        ];
+        const teamNames = teams.map(t => t.team.displayName);
+        const values = statsList.map(label =>
+          teams.map(team => {
+            const stat = team.statistics.find(s => s.label === label);
+            return stat ? parseInt((stat.displayValue || "0").replace(/,/g, '')) || 0 : 0;
+          })
+        );
+        overlay.querySelector('.tab-stats').innerHTML = `
+          <canvas id="statsChart" width="320" height="170"></canvas>
+          <div style="text-align:center;margin-top:8px;font-size:.96em;">
+            <span style="color:#2196F3;">${teamNames[0]}</span> vs <span style="color:#EF7C08;">${teamNames[1]}</span>
+          </div>
+        `;
+        setTimeout(() => {
+          const ctx = document.getElementById('statsChart').getContext('2d');
+          if (window.statsChartInstance) window.statsChartInstance.destroy();
+          window.statsChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: statsList,
+              datasets: [
+                {
+                  label: teamNames[0],
+                  data: values.map(v => v[0]),
+                  backgroundColor: '#2196F3'
+                },
+                {
+                  label: teamNames[1],
+                  data: values.map(v => v[1]),
+                  backgroundColor: '#EF7C08'
+                }
+              ]
+            },
+            options: {
+              responsive: false,
+              plugins: { legend: { display: true, position: 'top' } },
+              scales: { y: { beginAtZero: true } }
+            }
+          });
+        }, 60);
+
+      } catch (err) {
+        overlay.querySelector('.tab-stats').innerHTML = `
+          <div style="padding:24px;text-align:center;">
+            <b>No stats available.</b>
+            <br><small>${err.message}</small>
+          </div>`;
+      }
+    });
   }
 
   matchesContainer.appendChild(matchCard);
 });
+
+// ... Lo de abajo igual ...
+
 
   }
 
