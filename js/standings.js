@@ -1,73 +1,70 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const standingsGrid = document.getElementById('standingsGrid');
-    
+  
+    // Helper para encontrar stats por name
+    function getStat(stats, name) {
+      const stat = stats.find(s => s.name === name);
+      return stat ? stat.value ?? '-' : '-';
+    }
+  
     async function fetchStandings() {
         try {
-            const response = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/standings');
-            const data = await response.json();
-            
-            console.log("API Response:", data); // ← Verifica esto en consola
-            
-            if (!data.children || data.children.length === 0) {
-                return { 
-                    status: 'PRE_SEASON',
-                    message: 'La temporada no ha comenzado' 
-                };
-            }
-            return data.children[0].standings.entries;
+          const response = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/standings');
+          const data = await response.json();
+          console.log(data); // Esto imprime la estructura real, revisa la consola
+          return data;
         } catch (error) {
-            console.error('Error:', error);
-            return [];
+          console.error('Error:', error);
+          return null;
         }
-    }
-
+      }      
+  
     async function renderStandings() {
-        standingsGrid.innerHTML = '<div class="loading">Loading standings...</div>';
-        
-        try {
-            const standings = await fetchStandings();
-            
-            standingsGrid.innerHTML = '';
-            
-            standings.forEach(team => {
-                const teamCard = document.createElement('div');
-                teamCard.className = 'team-card';
-                teamCard.innerHTML = `
-                    <div class="team-info">
-                        <img src="${team.team.logos[0].href}" 
-                             alt="${team.team.displayName}" 
-                             class="team-logo-sm">
-                        <span>${team.team.displayName}</span>
-                    </div>
-                    <div class="team-stats">
-                        <span>${team.stats[3].value}</span> <!-- Wins -->
-                        <span>${team.stats[4].value}</span> <!-- Losses -->
-                        <span>${team.stats[7].value}</span> <!-- Points For -->
-                        <span>${team.stats[8].value}</span> <!-- Points Against -->
-                    </div>
-                `;
-                standingsGrid.appendChild(teamCard);
-            });
-
-        } catch (error) {
-            standingsGrid.innerHTML = `
-                <div class="no-standings-message">
-                    <p>No standings are available at this time.</p>
-                    <p>Check back later for updated standings!</p>
-                </div>
-            `;
-        }
-    }
-
-    // Switch between NFL/NCAA
-    document.querySelectorAll('.league-switch button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.league-switch button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderStandings(btn.classList.contains('nfl-btn') ? 'nfl' : 'ncaa');
+      standingsGrid.innerHTML = '<div class="loading">Loading standings...</div>';
+      const conferences = await fetchStandings();
+      standingsGrid.innerHTML = '';
+  
+      if (!conferences.length) {
+        standingsGrid.innerHTML = `<div class="no-standings-message"><p>No standings available at this time.</p></div>`;
+        return;
+      }
+  
+      conferences.forEach(group => {
+        const groupTitle = group.name || group.abbreviation || '';
+        const container = document.createElement('div');
+        container.className = 'standings-group';
+  
+        container.innerHTML = `<h3 class="standings-group-title">${groupTitle}</h3>
+          <div class="standings-header">
+            <span>Team</span>
+            <span>W</span>
+            <span>L</span>
+            <span>PF</span>
+            <span>PA</span>
+          </div>
+          <div class="standings-teams"></div>
+        `;
+  
+        const teamsContainer = container.querySelector('.standings-teams');
+        (group.standings?.entries || []).forEach(team => {
+          teamsContainer.innerHTML += `
+            <div class="team-row">
+              <span class="team-info">
+                <img src="${team.team.logos?.[0]?.href || ''}" alt="${team.team.displayName}" class="team-logo-sm">
+                ${team.team.displayName}
+              </span>
+              <span>${getStat(team.stats, 'wins')}</span>
+              <span>${getStat(team.stats, 'losses')}</span>
+              <span>${getStat(team.stats, 'pointsFor')}</span>
+              <span>${getStat(team.stats, 'pointsAgainst')}</span>
+            </div>
+          `;
         });
-    });
-
-    // Initial render
+  
+        standingsGrid.appendChild(container);
+      });
+    }
+  
     renderStandings();
-});
+  });
+  
