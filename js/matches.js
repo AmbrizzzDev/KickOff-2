@@ -112,18 +112,19 @@ allGames.forEach(evt => {
       <span class="match-time">${timeDisplay}</span>
     </div>
     <div class="teams-container">
-      <div class="team">
-        <img src="${away?.team?.logo || ''}" class="team-logo">
-        <span class="team-name">${away?.team?.displayName || 'TBD'}</span>
-        <span class="score">${away?.score ?? '0'}</span>
-      </div>
-      <span class="vs-text">VS</span>
-      <div class="team">
-        <img src="${home?.team?.logo || ''}" class="team-logo">
-        <span class="team-name">${home?.team?.displayName || 'TBD'}</span>
-        <span class="score">${home?.score ?? '0'}</span>
-      </div>
-    </div>
+  <div class="team">
+    <img src="${away?.team?.logo || ''}" class="team-logo">
+    <span class="team-name">${away?.team?.displayName || 'TBD'}</span>
+    ${(isLive || isFinal) ? `<span class="score">${away?.score ?? '0'}</span>` : ''}
+  </div>
+  <span class="vs-text">VS</span>
+  <div class="team">
+    <img src="${home?.team?.logo || ''}" class="team-logo">
+    <span class="team-name">${home?.team?.displayName || 'TBD'}</span>
+    ${(isLive || isFinal) ? `<span class="score">${home?.score ?? '0'}</span>` : ''}
+  </div>
+</div>
+
     <div class="match-details">
       <p class="match-week">${getWeekLabel(weekNumber)}</p>
       <p class="match-stadium">@ ${comp.venue?.fullName || 'TBD'}</p>
