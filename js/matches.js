@@ -307,49 +307,60 @@ allGames.forEach(evt => {
         teamStatsHTML += "</div>";
       
         // --- PLAYER STATS TABLES ---
-        const categories = [
-          { key: "passing", label: "Passing", cols: ["C/ATT", "YDS", "AVG", "TD", "INT"] },
-          { key: "rushing", label: "Rushing", cols: ["CAR", "YDS", "AVG", "TD", "LONG"] },
-          { key: "receiving", label: "Receiving", cols: ["REC", "YDS", "AVG", "TD", "LONG"] },
-          { key: "kicking", label: "Kicking", cols: ["FG", "PCT", "LONG", "XP", "PTS"] },
-          { key: "punting", label: "Punting", cols: ["PUNTS", "AVG", "I20", "TD", "LONG"] }
-        ];
-        const playerStats = (box?.players || []).map(t => ({
-          team: t.team?.displayName || '',
-          categories: t.statistics || []
-        }));
-      
-        let playerStatsHTML = "";
-        categories.forEach(cat => {
-          playerStatsHTML += `<div class="player-stats-section"><h3>${cat.label}</h3>`;
-          playerStats.forEach((t, i) => {
-            const statObj = t.categories.find(s => s.name?.toLowerCase() === cat.key);
-            if (!statObj || !statObj.labels) {
-              playerStatsHTML += `<div class="team-name" style="color:${teamColors[i]}">${t.team}</div>`;
-              playerStatsHTML += `<table class="player-stats-table"><thead><tr><th>Player</th>`;
-              cat.cols.forEach(col => playerStatsHTML += `<th>${col}</th>`);
-              playerStatsHTML += `</tr></thead><tbody><tr><td colspan="${cat.cols.length+1}" style="text-align:center;">No data</td></tr></tbody></table>`;
-              return;
-            }
-            playerStatsHTML += `<div class="team-name" style="color:${teamColors[i]}">${t.team}</div>`;
-            playerStatsHTML += `<table class="player-stats-table"><thead><tr><th>Player</th>`;
-            cat.cols.forEach(col => playerStatsHTML += `<th>${col}</th>`);
-            playerStatsHTML += `</tr></thead><tbody>`;
-            statObj.labels.forEach((_, idx) => {
-              const player = statObj.names?.[idx] || '-';
-              playerStatsHTML += `<tr><td>${player}</td>`;
-              cat.cols.forEach(col => {
-                const colIdx = statObj.labels.indexOf(col);
-                let stat = colIdx !== -1 ? statObj.statistics?.[colIdx]?.[idx] : '-';
-                if (stat === undefined) stat = '-';
-                playerStatsHTML += `<td>${stat}</td>`;
-              });
-              playerStatsHTML += `</tr>`;
-            });
-            playerStatsHTML += `</tbody></table>`;
-          });
-          playerStatsHTML += `</div>`;
+const categories = [
+  { key: "passing", label: "Passing", cols: ["C/ATT", "YDS", "AVG", "TD", "INT"] },
+  { key: "rushing", label: "Rushing", cols: ["CAR", "YDS", "AVG", "TD", "LONG"] },
+  { key: "receiving", label: "Receiving", cols: ["REC", "YDS", "AVG", "TD", "LONG"] },
+  { key: "kicking", label: "Kicking", cols: ["FG", "PCT", "LONG", "XP", "PTS"] },
+  { key: "punting", label: "Punting", cols: ["PUNTS", "AVG", "I20", "TD", "LONG"] }
+];
+
+// Aquí buscamos si los datos existen en otra estructura
+let playerStats = [];
+if (box?.players?.length) {
+  playerStats = box.players.map(t => ({
+    team: t.team?.displayName || '',
+    teamAbbr: t.team?.abbreviation || '',
+    categories: t.statistics || []
+  }));
+} else if (boxData.gamepackageJSON?.playerStats) {
+  // Fallback: a veces está en boxData.gamepackageJSON.playerStats
+  playerStats = (boxData.gamepackageJSON.playerStats.teams || []).map(t => ({
+    team: t.team?.displayName || '',
+    teamAbbr: t.team?.abbreviation || '',
+    categories: t.categories || []
+  }));
+}
+
+let playerStatsHTML = "";
+categories.forEach(cat => {
+  playerStatsHTML += `<div class="player-stats-section"><h3>${cat.label}</h3>`;
+  playerStats.forEach((t, i) => {
+    // Busca la categoría de estadísticas correspondiente
+    const statObj = t.categories.find(s => (s.name || s.displayName)?.toLowerCase() === cat.key);
+    playerStatsHTML += `<div class="team-name" style="color:${teamColors[i]}">${t.team}</div>`;
+    playerStatsHTML += `<table class="player-stats-table"><thead><tr><th>Player</th>`;
+    cat.cols.forEach(col => playerStatsHTML += `<th>${col}</th>`);
+    playerStatsHTML += `</tr></thead><tbody>`;
+    if (statObj && statObj.names && statObj.labels && statObj.statistics) {
+      statObj.names.forEach((player, idx) => {
+        playerStatsHTML += `<tr><td>${player}</td>`;
+        cat.cols.forEach(col => {
+          const colIdx = statObj.labels.indexOf(col);
+          let stat = (colIdx !== -1 && statObj.statistics[colIdx]) ? statObj.statistics[colIdx][idx] : '-';
+          if (stat === undefined) stat = '-';
+          playerStatsHTML += `<td>${stat}</td>`;
         });
+        playerStatsHTML += `</tr>`;
+      });
+    } else {
+      // Si no hay datos para esa categoría
+      playerStatsHTML += `<tr><td colspan="${cat.cols.length+1}" style="text-align:center;">-</td></tr>`;
+    }
+    playerStatsHTML += `</tbody></table>`;
+  });
+  playerStatsHTML += `</div>`;
+});
       
         overlay.querySelector('.tab-stats').innerHTML = `
           ${teamStatsHTML}
