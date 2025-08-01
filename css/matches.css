@@ -361,7 +361,7 @@
 }
 
 .final-badge {
-    display: inline-block;
+    displaay: inline-block;
     background: #10162f;
     color: #fff;
     font-weight: bold;
