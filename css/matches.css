@@ -38,6 +38,35 @@
     gap: 1rem;
     margin-bottom: 2rem;
     flex-wrap: wrap;
+    justify-content: center;
+}
+
+.week-filter {
+    padding: 0.8rem;
+    border-radius: 25px;
+    background: var(--card-bg);
+    color: var(--text-light);
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+}
+
+.seasonTypeFilter {
+    padding: 0.8rem;
+    border-radius: 25px;
+    background: var(--card-bg);
+    color: var(--text-light);
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+}
+
+.filters-search {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .search-bar {
@@ -64,23 +93,6 @@
     cursor: pointer;
 }
 
-.week-filter {
-    padding: 0.8rem;
-    border-radius: 25px;
-    background: var(--card-bg);
-    color: var(--text-light);
-    border: none;
-    font-family: 'Poppins', sans-serif;
-}
-
-.seasonTypeFilter {
-    padding: 0.8rem;
-    border-radius: 25px;
-    background: var(--card-bg);
-    color: var(--text-light);
-    border: none;
-    font-family: 'Poppins', sans-serif;
-}
 .matches-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
