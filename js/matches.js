@@ -195,6 +195,7 @@ allGames.forEach(evt => {
   try {
     const boxRes = await fetch(`/api/espn-boxscore-cdn?gameId=${evt.id}`);
     const boxData = await boxRes.json();
+    
   
     if (!boxData || !boxData.boxscore) {
       overlay.querySelector('.tab-stats').innerHTML = `<pre>No boxscore in response for event ${evt.id}\n\n${JSON.stringify(boxData, null, 2)}</pre>`;
