@@ -132,14 +132,6 @@
     font-weight: bold;
 }
 
-.league-tag {
-    background: var(--primary-color);
-    padding: 0.3rem 0.8rem;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-family: 'Lacquer', cursive;
-}
-
 .match-week {
     color: #ffffff8e;
     font-size: 0.8rem;
@@ -173,28 +165,6 @@
     object-fit: contain;
     transition: all 0.3s;
     position: relative;
-}
-
-.possessing::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;
-    height: 3px;
-    background: var(--secondary-color);
-    animation: slideLine 1.5s infinite;
-}
-
-.possessing .team-logo::after {
-    content: '🏈';
-    position: absolute;
-    top: -15px;
-    right: -15px;
-    font-size: 1.5rem;
-    animation: bounceBall 0.5s infinite alternate;
-    z-index: 2;
 }
 
 @keyframes slideLine {
@@ -269,22 +239,6 @@
     0% { box-shadow: 0 0 0 0 rgba(255,70,85,0.4); }
     70% { box-shadow: 0 0 0 10px rgba(255,70,85,0); }
     100% { box-shadow: 0 0 0 0 rgba(255,70,85,0); }
-}
-
-.ncaaf-alert .alert-banner {
-    background-color: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeeba;
-    padding: 12px;
-    margin-bottom: 16px;
-    border-radius: 15px;
-    font-size: 0.95rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.team.winner {
-    background: rgba(40, 167, 69, 0.1);
-    border-radius: 8px;
 }
 
 .tab-pbp {
