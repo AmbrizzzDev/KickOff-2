@@ -265,7 +265,7 @@ try {
     { label: "Rushing", key: "Rushing" },
     { label: "Turnovers", key: "Turnovers" },
     { label: "1st Downs", key: "1st Downs" },
-    { label: "Interceptions", key: "Interceptions thrown" },
+    { label: "Int. Thrown", key: "Interceptions thrown" },
     { label: "Fumbles Lost", key: "Fumbles lost" },
     { label: "Penalties", key: "Penalties" },
     { label: "Sacks", key: "Sacks-Yards Lost" },
@@ -320,8 +320,8 @@ try {
           </div>
           <div class="apple-stat-label">${stat.label}</div>
           <div class="apple-stat-value right">
-            ${rightBar}
             <span>${rightVal}</span>
+            ${rightBar}
           </div>
         </div>`;
       }).join('')}
