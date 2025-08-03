@@ -246,73 +246,101 @@ document.addEventListener('DOMContentLoaded', () => {
               overlay.querySelector('.tab-pbp').innerHTML = `<p style="padding:32px;text-align:center;">No play-by-play available for college football games.</p>`;
             }
   
-            // STATS TAB (funciona para ambos)
-            try {
-              const boxscoreUrl = currentLeague === 'nfl'
-                ? `/api/espn-boxscore-cdn?gameId=${evt.id}`
-                : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/boxscore?event=${evt.id}`;
-              const boxRes = await fetch(boxscoreUrl);
-              const boxData = await boxRes.json();
-              const teams = currentLeague === 'nfl'
-                ? boxData.gamepackageJSON?.boxscore?.teams || []
-                : boxData.boxscore?.teams || [];
-              if (teams.length !== 2) throw new Error("No team stats found.");
-  
-              const statsList = [
-                "Total Yards",
-                "Passing",
-                "Rushing",
-                "Turnovers",
-                "1st Downs"
-              ];
-              const teamNames = teams.map(t => t.team.displayName);
-              const values = statsList.map(label =>
-                teams.map(team => {
-                  const stat = team.statistics.find(s => s.label === label);
-                  return stat ? parseInt((stat.displayValue || "0").replace(/,/g, '')) || 0 : 0;
-                })
-              );
-              overlay.querySelector('.tab-stats').innerHTML = `
-                <canvas id="statsChart" width="320" height="170"></canvas>
-                <div style="text-align:center;margin-top:8px;font-size:.96em;">
-                  <span style="color:#2196F3;">${teamNames[0]}</span> vs <span style="color:#EF7C08;">${teamNames[1]}</span>
-                </div>
-              `;
-              setTimeout(() => {
-                const ctx = document.getElementById('statsChart').getContext('2d');
-                if (window.statsChartInstance) window.statsChartInstance.destroy();
-                window.statsChartInstance = new Chart(ctx, {
-                  type: 'bar',
-                  data: {
-                    labels: statsList,
-                    datasets: [
-                      {
-                        label: teamNames[0],
-                        data: values.map(v => v[0]),
-                        backgroundColor: '#2196F3'
-                      },
-                      {
-                        label: teamNames[1],
-                        data: values.map(v => v[1]),
-                        backgroundColor: '#EF7C08'
-                      }
-                    ]
-                  },
-                  options: {
-                    responsive: false,
-                    plugins: { legend: { display: true, position: 'top' } },
-                    scales: { y: { beginAtZero: true } }
-                  }
-                });
-              }, 60);
-  
-            } catch (err) {
-              overlay.querySelector('.tab-stats').innerHTML = `
-                <div style="padding:24px;text-align:center;">
-                  <b>No stats available.</b>
-                  <br><small>${err.message}</small>
-                </div>`;
-            }
+// STATS TAB (Apple Sports style)
+try {
+  const boxscoreUrl = currentLeague === 'nfl'
+    ? `/api/espn-boxscore-cdn?gameId=${evt.id}`
+    : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/boxscore?event=${evt.id}`;
+  const boxRes = await fetch(boxscoreUrl);
+  const boxData = await boxRes.json();
+  const teams = currentLeague === 'nfl'
+    ? boxData.gamepackageJSON?.boxscore?.teams || []
+    : boxData.boxscore?.teams || [];
+  if (teams.length !== 2) throw new Error("No team stats found.");
+
+  const statsList = [
+    "Total Yards",
+    "Passing",
+    "Rushing",
+    "Turnovers",
+    "1st Downs"
+  ];
+  const teamNames = teams.map(t => t.team.displayName);
+  const teamColors = teams.map(t => t.team.color ? `#${t.team.color}` : "#2196F3");
+  const values = statsList.map(label =>
+    teams.map(team => {
+      const stat = team.statistics.find(s => s.label === label);
+      return stat ? parseInt((stat.displayValue || "0").replace(/,/g, '')) || 0 : 0;
+    })
+  );
+
+  overlay.querySelector('.tab-stats').innerHTML = `
+    <div class="apple-stats-header">
+      <div class="apple-team apple-left">
+        <img src="${teams[0].team.logo}" alt="${teamNames[0]}" />
+        <span>${teamNames[0]}</span>
+      </div>
+      <span class="apple-vs">vs</span>
+      <div class="apple-team apple-right">
+        <img src="${teams[1].team.logo}" alt="${teamNames[1]}" />
+        <span>${teamNames[1]}</span>
+      </div>
+    </div>
+    <canvas id="statsChart" width="320" height="180"></canvas>
+    <div class="apple-labels">
+      ${statsList.map(l => `<span>${l}</span>`).join('')}
+    </div>
+  `;
+  setTimeout(() => {
+    const ctx = document.getElementById('statsChart').getContext('2d');
+    if (window.statsChartInstance) window.statsChartInstance.destroy();
+    window.statsChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: statsList,
+        datasets: [
+          {
+            label: teamNames[0],
+            data: values.map(v => v[0]),
+            backgroundColor: teamColors[0]
+          },
+          {
+            label: teamNames[1],
+            data: values.map(v => v[1]),
+            backgroundColor: teamColors[1]
+          }
+        ]
+      },
+      options: {
+        responsive: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        layout: { padding: 8 },
+        scales: {
+          x: {
+            ticks: { color: "#222", font: { size: 13, weight: 'bold' } },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: "#888", stepSize: 1, font: { size: 12 } },
+            grid: { color: "#eee" }
+          }
+        }
+      }
+    });
+  }, 60);
+
+} catch (err) {
+  overlay.querySelector('.tab-stats').innerHTML = `
+    <div style="padding:24px;text-align:center;">
+      <b>No stats available.</b>
+      <br><small>${err.message}</small>
+    </div>`;
+}
           });
         }
   
