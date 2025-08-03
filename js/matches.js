@@ -258,82 +258,58 @@ try {
     : boxData.boxscore?.teams || [];
   if (teams.length !== 2) throw new Error("No team stats found.");
 
+  // Las stats que quieres mostrar y sus labels
   const statsList = [
-    "Total Yards",
-    "Passing",
-    "Rushing",
-    "Turnovers",
-    "1st Downs"
+    { key: 'Total Yards', label: 'Total Yards' },
+    { key: 'Passing', label: 'Passing' },
+    { key: 'Rushing', label: 'Rushing' },
+    { key: 'Turnovers', label: 'Turnovers' },
+    { key: '1st Downs', label: "1st Downs" }
   ];
-  const teamNames = teams.map(t => t.team.displayName);
-  const teamColors = teams.map(t => t.team.color ? `#${t.team.color}` : "#2196F3");
-  const values = statsList.map(label =>
-    teams.map(team => {
-      const stat = team.statistics.find(s => s.label === label);
-      return stat ? parseInt((stat.displayValue || "0").replace(/,/g, '')) || 0 : 0;
-    })
-  );
 
+  const teamNames = teams.map(t => t.team.displayName);
+  const teamLogos = teams.map(t => t.team.logo);
+  const teamColors = teams.map(t => t.team.color ? `#${t.team.color}` : "#2196F3");
+  const statsValues = statsList.map(stat => {
+    return teams.map(team => {
+      const s = team.statistics.find(st => st.label === stat.label);
+      return s ? parseInt((s.displayValue || "0").replace(/,/g, '')) || 0 : 0;
+    });
+  });
+
+  // Busca el máximo valor de stats para que la barra sea proporcional
+  const maxValue = Math.max(...statsValues.flat().map(Number), 1);
+
+  // HTML horizontal mirror bars
   overlay.querySelector('.tab-stats').innerHTML = `
-    <div class="apple-stats-header">
-      <div class="apple-team apple-left">
-        <img src="${teams[0].team.logo}" alt="${teamNames[0]}" />
-        <span>${teamNames[0]}</span>
+    <div class="apple-mirror-stats">
+      <div class="mirror-teams">
+        <div class="team team-left">
+          <img src="${teamLogos[0]}" alt="${teamNames[0]}"/>
+          <span>${teamNames[0]}</span>
+        </div>
+        <div class="team team-right">
+          <img src="${teamLogos[1]}" alt="${teamNames[1]}"/>
+          <span>${teamNames[1]}</span>
+        </div>
       </div>
-      <span class="apple-vs">vs</span>
-      <div class="apple-team apple-right">
-        <img src="${teams[1].team.logo}" alt="${teamNames[1]}" />
-        <span>${teamNames[1]}</span>
+      <div class="mirror-table">
+        ${statsList.map((stat, i) => `
+          <div class="mirror-row">
+            <div class="bar-wrap left">
+              <div class="bar" style="width:${100 * statsValues[i][0] / maxValue}%;background:${teamColors[0]};"></div>
+              <span class="value">${statsValues[i][0]}</span>
+            </div>
+            <span class="stat-label">${stat.label}</span>
+            <div class="bar-wrap right">
+              <div class="bar" style="width:${100 * statsValues[i][1] / maxValue}%;background:${teamColors[1]};"></div>
+              <span class="value">${statsValues[i][1]}</span>
+            </div>
+          </div>
+        `).join('')}
       </div>
-    </div>
-    <canvas id="statsChart" width="320" height="180"></canvas>
-    <div class="apple-labels">
-      ${statsList.map(l => `<span>${l}</span>`).join('')}
     </div>
   `;
-  setTimeout(() => {
-    const ctx = document.getElementById('statsChart').getContext('2d');
-    if (window.statsChartInstance) window.statsChartInstance.destroy();
-    window.statsChartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: statsList,
-        datasets: [
-          {
-            label: teamNames[0],
-            data: values.map(v => v[0]),
-            backgroundColor: teamColors[0]
-          },
-          {
-            label: teamNames[1],
-            data: values.map(v => v[1]),
-            backgroundColor: teamColors[1]
-          }
-        ]
-      },
-      options: {
-        responsive: false,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
-        layout: { padding: 8 },
-        scales: {
-          x: {
-            ticks: { color: "#222", font: { size: 13, weight: 'bold' } },
-            grid: { display: false }
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { color: "#888", stepSize: 1, font: { size: 12 } },
-            grid: { color: "#eee" }
-          }
-        }
-      }
-    });
-  }, 60);
-
 } catch (err) {
   overlay.querySelector('.tab-stats').innerHTML = `
     <div style="padding:24px;text-align:center;">

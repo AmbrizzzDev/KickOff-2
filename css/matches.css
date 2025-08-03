@@ -393,55 +393,73 @@
     100% { box-shadow: 0 0 14px #ef7c08aa, 0 0 28px #ef7c0877; }
   }
 
-  .apple-stats-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2.5rem;
-    margin: 18px 0 10px 0;
+  .apple-mirror-stats {
+    padding: 12px 0 4px 0;
   }
-  
-  .apple-team {
-    display: flex;
-    align-items: center;
-    gap: 0.7em;
-    font-size: 1.11em;
-    font-weight: 600;
-    color: #222;
-  }
-  .apple-left img, .apple-right img {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.07);
-  }
-  
-  .apple-vs {
-    font-size: 1.15em;
-    color: #bdbdbd;
-    font-weight: bold;
-  }
-  
-  .apple-labels {
+  .mirror-teams {
     display: flex;
     justify-content: space-between;
-    font-size: 0.93em;
-    color: #777;
-    margin: 10px 0 4px 0;
-    gap: 0.25em;
+    align-items: center;
+    margin-bottom: 18px;
   }
-  
-  .pbp-card canvas#statsChart {
-    display: block;
-    margin: 0 auto 6px auto;
-    box-shadow: 0 0 0 0 transparent;
-    border-radius: 16px;
-    background: #f8fafd;
+  .mirror-teams .team {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 1.09em;
   }
-  
-  @media (max-width: 500px) {
-    .apple-stats-header { gap: 0.6rem; }
-    .apple-left img, .apple-right img { width: 24px; height: 24px; }
-    .apple-labels { font-size: 0.77em; }
+  .mirror-teams .team img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #181818;
+    border: 2px solid #333;
+  }
+  .mirror-table {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+  }
+  .mirror-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 13px;
+  }
+  .stat-label {
+    min-width: 90px;
+    text-align: center;
+    font-weight: 600;
+    color: #aaa;
+    font-size: 1.01em;
+  }
+  .bar-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .bar-wrap.left {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
+  .bar-wrap.right {
+    justify-content: flex-start;
+  }
+  .bar {
+    height: 18px;
+    border-radius: 7px;
+    min-width: 2px;
+    max-width: 100%;
+    transition: width 0.4s cubic-bezier(.45,1.4,.53,1);
+    box-shadow: 0 0 8px 0 #2222;
+  }
+  .value {
+    font-weight: bold;
+    font-size: 1em;
+    color: #fff;
+    width: 30px;
+    text-align: center;
+    letter-spacing: 0.5px;
   }
