@@ -217,7 +217,7 @@
   box-shadow: 0 4px 32px #0006;
   text-align: center;
   /* Cambia el margin: */
-  margin: -12rem auto 2.5rem auto; /* <-- Esto empuja el contador más abajo */
+  margin: 0rem auto 2.5rem auto; /* <-- Esto empuja el contador más abajo */
   max-width: 560px;
   position: relative;
   z-index: 1;
@@ -313,3 +313,61 @@
   color: var(--secondary-color);
 }
 
+@media (max-width: 900px) {
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    z-index: 30;
+  }
+  .nav-links {
+    position: fixed;
+    top: 0;
+    right: -110vw;
+    width: 90vw;
+    height: 100vh;
+    flex-direction: column !important;
+    justify-content: center;
+    align-items: center;
+    background: rgba(50, 50, 54, 0.84);
+    backdrop-filter: blur(18px);
+    box-shadow: -3px 0 24px 0 rgba(0,0,0,0.19);
+    border-top-left-radius: 38px;
+    border-bottom-left-radius: 38px;
+    gap: 2.5rem;
+    transition: right 0.26s cubic-bezier(.55,0,.1,1);
+    z-index: 21;
+  }
+  .nav-links.active a {
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(40px);
+    animation: navLinkIn 0.48s cubic-bezier(.59,0,.23,1) forwards;
+  }
+
+  .nav-links a {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(40px);
+    transition: none;
+  }
+
+  .nav-links.active a:nth-child(1) { animation-delay: 0.09s; }
+  .nav-links.active a:nth-child(2) { animation-delay: 0.18s; }
+  .nav-links.active a:nth-child(3) { animation-delay: 0.27s; }
+  .nav-links.active a:nth-child(4) { animation-delay: 0.36s; }
+  /* agrega más si tienes más links */
+
+  @keyframes navLinkIn {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+      filter: blur(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+}

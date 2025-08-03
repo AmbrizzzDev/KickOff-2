@@ -1,22 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // League Switch Functionality
-    const nflBtn = document.querySelector('.nfl-btn');
-    const ncaaBtn = document.querySelector('.ncaa-btn');
-    
-    if (nflBtn && ncaaBtn) {
-        nflBtn.addEventListener('click', () => {
-            nflBtn.classList.add('active');
-            ncaaBtn.classList.remove('active');
-            // Add NFL content loading logic
-        });
-
-        ncaaBtn.addEventListener('click', () => {
-            ncaaBtn.classList.add('active');
-            nflBtn.classList.remove('active');
-            // Add NCAA content loading logic
-        });
-    }
-
     // Update favicon
     function updateFavicon() {
         const favicon = document.querySelector("link[rel='icon']");

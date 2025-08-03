@@ -1,43 +1,50 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const container = document.getElementById('newsContainer');
   const loadMoreBtn = document.getElementById('loadMoreBtn');
+  const toggleNFL = document.getElementById('toggleNFL');
+  const toggleNCAA = document.getElementById('toggleNCAA');
   const NEWS_LIMIT = 12;
   const LOAD_INCREMENT = 12;
 
-  let currentIndex = 0;
+  // Guarda las noticias cargadas
   let nflHeadlines = [];
+  let collegeHeadlines = [];
+  let currentType = 'nfl'; // default
+  let currentIndex = 0;
 
-  const blacklist = [
-    'NHL', 'MLB', 'NBA', 'NCAAM', 'NCAAF', 'NASCAR', 'Soccer', 'F1', 'Golf', 'Tennis', 'Boxing'
-  ];
-
-  const res = await fetch('https://now.core.api.espn.com/v1/sports/news?limit=1000&sport=football');
-  const data = await res.json();
-  const headlines = data.headlines || [];
-
-  // Filtrar solo NFL
-  nflHeadlines = headlines.filter(item => {
-    if (!item.categories) return false;
-    const hasBlacklisted = item.categories.some(cat =>
-      cat.description && blacklist.includes(cat.description.trim().toUpperCase())
-    );
-    const hasNFL = item.categories.some(cat =>
-      cat.description && cat.description.trim().toUpperCase() === 'NFL'
-    );
-    return hasNFL && !hasBlacklisted;
-  });
-
-  if (!nflHeadlines.length) {
-    container.innerHTML = '<p>No NFL news available.</p>';
-    return;
+  async function fetchNFLNews() {
+    const blacklist = [
+      'NHL', 'MLB', 'NBA', 'NCAAM', 'NCAAF', 'NASCAR', 'Soccer', 'F1', 'Golf', 'Tennis', 'Boxing'
+    ];
+    const res = await fetch('https://now.core.api.espn.com/v1/sports/news?limit=1000&sport=football');
+    const data = await res.json();
+    const headlines = data.headlines || [];
+    // Filtra solo NFL
+    return headlines.filter(item => {
+      if (!item.categories) return false;
+      const hasBlacklisted = item.categories.some(cat =>
+        cat.description && blacklist.includes(cat.description.trim().toUpperCase())
+      );
+      const hasNFL = item.categories.some(cat =>
+        cat.description && cat.description.trim().toUpperCase() === 'NFL'
+      );
+      return hasNFL && !hasBlacklisted;
+    });
   }
 
-  function renderNews(from, to) {
-    nflHeadlines.slice(from, to).forEach(item => {
-      const img = item.images?.[0]?.url || item.video?.[0]?.posterImages?.default?.href || 'img/placeholder.jpg';
+  async function fetchCollegeNews() {
+    const resp = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/college-football/news');
+    const data = await resp.json();
+    return (data.articles || []).filter(item => !!item.headline);
+  }
+
+  function renderNews(headlines, from, to) {
+    headlines.slice(from, to).forEach(item => {
+      const img = item.images?.[0]?.url || item.images?.[0]?.url || item.video?.[0]?.posterImages?.default?.href || 'img/placeholder.jpg';
       const title = item.title || item.headline || 'Untitled';
       const shortDesc = item.description || '';
-      const link = item.links?.web?.href || '#';
+      // La API NCAA usa links.web.href, la NFL puede tener links.web.href o links.web
+      const link = item.links?.web?.href || item.links?.web || '#';
 
       const card = document.createElement('div');
       card.className = 'news-card';
@@ -59,19 +66,79 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Render inicial
-  renderNews(currentIndex, currentIndex + NEWS_LIMIT);
-  currentIndex += NEWS_LIMIT;
+  function resetNews() {
+    container.innerHTML = '';
+    currentIndex = 0;
+    loadMoreBtn.style.display = 'block';
+  }
+
+  // Actualiza el toggle visualmente
+  function setActiveToggle(type) {
+    toggleNFL.classList.toggle('active', type === 'nfl');
+    toggleNCAA.classList.toggle('active', type === 'ncaa');
+  }
+
+  // Lógica para cargar las noticias según el tipo (NFL/NCAA)
+  async function showNews(type, initial = false) {
+    setActiveToggle(type);
+    resetNews();
+
+    if (type === 'nfl') {
+      if (!nflHeadlines.length) {
+        nflHeadlines = await fetchNFLNews();
+      }
+      if (!nflHeadlines.length) {
+        container.innerHTML = '<p>No NFL news available.</p>';
+        loadMoreBtn.style.display = 'none';
+        return;
+      }
+      renderNews(nflHeadlines, currentIndex, currentIndex + NEWS_LIMIT);
+      currentIndex += NEWS_LIMIT;
+      if (currentIndex >= nflHeadlines.length) loadMoreBtn.style.display = 'none';
+    } else {
+      if (!collegeHeadlines.length) {
+        collegeHeadlines = await fetchCollegeNews();
+      }
+      if (!collegeHeadlines.length) {
+        container.innerHTML = '<p>No college football news available.</p>';
+        loadMoreBtn.style.display = 'none';
+        return;
+      }
+      renderNews(collegeHeadlines, currentIndex, currentIndex + NEWS_LIMIT);
+      currentIndex += NEWS_LIMIT;
+      if (currentIndex >= collegeHeadlines.length) loadMoreBtn.style.display = 'none';
+    }
+  }
+
+  // Eventos del toggle
+  toggleNFL.addEventListener('click', () => {
+    if (currentType !== 'nfl') {
+      currentType = 'nfl';
+      showNews('nfl');
+    }
+  });
+  toggleNCAA.addEventListener('click', () => {
+    if (currentType !== 'ncaa') {
+      currentType = 'ncaa';
+      showNews('ncaa');
+    }
+  });
 
   // Botón Load More
   loadMoreBtn.addEventListener('click', () => {
-    renderNews(currentIndex, currentIndex + LOAD_INCREMENT);
-    currentIndex += LOAD_INCREMENT;
-
-    if (currentIndex >= nflHeadlines.length) {
-      loadMoreBtn.style.display = 'none';
+    if (currentType === 'nfl') {
+      renderNews(nflHeadlines, currentIndex, currentIndex + LOAD_INCREMENT);
+      currentIndex += LOAD_INCREMENT;
+      if (currentIndex >= nflHeadlines.length) loadMoreBtn.style.display = 'none';
+    } else {
+      renderNews(collegeHeadlines, currentIndex, currentIndex + LOAD_INCREMENT);
+      currentIndex += LOAD_INCREMENT;
+      if (currentIndex >= collegeHeadlines.length) loadMoreBtn.style.display = 'none';
     }
   });
+
+  // Render inicial: NFL por default
+  showNews('nfl', true);
 });
 
 

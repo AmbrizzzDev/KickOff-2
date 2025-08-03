@@ -33,25 +33,25 @@
     </nav>
   </header>
 
-  <main class="main-content">
-    <section class="schedule-reveals">
-      <h2 class="reveal-title">Top 2025 NFL Schedule Reveals</h2>
-      <div id="revealGrid" class="reveal-grid"></div>
-    </section>  
-
+  <main class="main-content"> 
     <section class="news-section">
       <h1 class="section-title">Football News</h1>
-      <div id="newsContainer" class="news-grid"></div>
-    </section>
+    
 
-    <div id="loadMoreContainer" style="text-align: center; margin-top: 2rem;">
-      <button id="loadMoreBtn" class="btn">Load More</button>
+    <div class="league-toggle">
+      <button id="toggleNFL" class="toggle-btn active">NFL</button>
+      <button id="toggleNCAA" class="toggle-btn">NCAA</button>
+    </div>
+    <div id="newsContainer" class="news-grid"></div>
+
+    <div class="load-more-wrapper">
+      <button id="loadMoreBtn" class="load-more-btn btn-load-more">Load More</button>
     </div>
     
+  </section>
   </main>
 
   <script src="/js/news.js"></script>
-  <script src="/js/security.js"></script>
   <script src="/js/nav.js"></script>
   <script defer src="/_vercel/insights/script.js"></script>
 </body>

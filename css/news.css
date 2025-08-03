@@ -1,14 +1,37 @@
     .news-section {
     padding: 2rem 5%;
   }
-  
+
   .section-title {
+    color: var(--primary-color);
     font-family: 'Lacquer', cursive;
     text-align: center;
     margin-bottom: 2rem;
-    color: var(--primary-color);
-    font-size: 2.2rem;
-  }
+    font-size: 2.5rem;
+}
+
+.league-toggle {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+
+.toggle-btn {
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 25px;
+    background: var(--card-bg);
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.toggle-btn.active {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    font-weight: 500;
+}
 
   .news-grid {
     display: grid;
@@ -156,7 +179,7 @@
       color: white;
   }
 
-.btn{
+.btn-load-more{
   --glow-color: rgb(176, 255, 183);
   --glow-spread-color: rgba(145, 255, 123, 0.781);
   --enhanced-glow-color: rgb(206, 255, 208);
@@ -170,14 +193,15 @@
   border-radius: 1em;
   outline: none;
   box-shadow: 0 0 1em .25em var(--glow-color),
-         0 0 4em 1em var(--glow-spread-color),
-         inset 0 0 .75em .25em var(--glow-color);
+  0 0 4em 1em var(--glow-spread-color),
+  inset 0 0 .75em .25em var(--glow-color);
   text-shadow: 0 0 .5em var(--glow-color);
   position: relative;
   transition: all 0.3s;
+  align-items: center;
  }
  
- .btn::after {
+ .btn-load-more::after {
   pointer-events: none;
   content: "";
   position: absolute;
@@ -191,17 +215,30 @@
   transform: perspective(1.5em) rotateX(35deg) scale(1, .6);
  }
  
- .btn:hover {
+ .btn-load-more:hover {
   color: var(--btn-color);
   cursor: pointer;
   background-color: var(--glow-color);
   box-shadow: 0 0 1em .25em var(--glow-color),
-         0 0 4em 2em var(--glow-spread-color),
-         inset 0 0 .75em .25em var(--glow-color);
+  0 0 4em 2em var(--glow-spread-color),
+  inset 0 0 .75em .25em var(--glow-color);
  }
  
- .btn:active {
+ .btn-load-more:active {
   box-shadow: 0 0 0.6em .25em var(--glow-color),
-         0 0 2.5em 2em var(--glow-spread-color),
-         inset 0 0 .5em .25em var(--glow-color);
+  0 0 2.5em 2em var(--glow-spread-color),
+  inset 0 0 .5em .25em var(--glow-color);
  }
+
+ .load-more-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.load-more-btn {
+  display: block;
+  margin: 0 auto;
+}
