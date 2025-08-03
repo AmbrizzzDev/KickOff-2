@@ -247,6 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
   
 // STATS TAB (Apple Sports style, centrado, sin barras)
+// STATS TAB (Comparative style)
 try {
   const boxscoreUrl = currentLeague === 'nfl'
     ? `/api/espn-boxscore-cdn?gameId=${evt.id}`
@@ -258,44 +259,45 @@ try {
     : boxData.boxscore?.teams || [];
   if (teams.length !== 2) throw new Error("No team stats found.");
 
-  // Mostrar todos los stats posibles de cada equipo
-  function getStatsTable(team) {
-    if (!team.statistics || !team.statistics.length) return '';
-    return `
-      <table class="apple-stats-table" style="margin: 0 auto;">
-        <thead>
-          <tr>
-            <th style="text-align:center;">Stat</th>
-            <th style="text-align:center;">Valor</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${team.statistics.map(stat => `
-            <tr>
-              <td style="text-align:center;">${stat.label}</td>
-              <td style="text-align:center;">${stat.displayValue}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-  }
+  // Combina todos los nombres de estadísticas únicas de ambos equipos
+  const allLabels = [
+    ...new Set([
+      ...(teams[0].statistics || []).map(s => s.label),
+      ...(teams[1].statistics || []).map(s => s.label)
+    ])
+  ].filter(Boolean);
 
-  const home = teams[1], away = teams[0];
+  const getStatValue = (team, label) => {
+    const s = (team.statistics || []).find(stat => stat.label === label);
+    return s ? s.displayValue : '-';
+  };
+
+  const away = teams[0], home = teams[1];
 
   overlay.querySelector('.tab-stats').innerHTML = `
-    <div class="apple-stats-header" style="display: flex; justify-content: center; align-items: flex-start; gap: 32px; flex-wrap: wrap;">
-      <div class="apple-team apple-left" style="flex:1; min-width:220px; text-align:center;">
-        <img src="${away.team.logo}" alt="${away.team.displayName}" class="apple-team-logo" style="height:56px;margin-bottom:8px;"/>
-        <div class="apple-team-name" style="font-weight:bold;font-size:1.15em;margin-bottom:10px;">${away.team.displayName}</div>
-        ${getStatsTable(away)}
+    <div class="apple-stats-comparative" style="width:100%;max-width:650px;margin:0 auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="text-align:center;flex:1;">
+          <img src="${away.team.logo}" alt="${away.team.displayName}" style="height:48px;">
+          <div style="font-size:1em;font-weight:600;">${away.team.displayName}</div>
+        </div>
+        <div style="flex:0 0 110px;text-align:center;font-size:1.2em;font-weight:600;opacity:.78;">STATS</div>
+        <div style="text-align:center;flex:1;">
+          <img src="${home.team.logo}" alt="${home.team.displayName}" style="height:48px;">
+          <div style="font-size:1em;font-weight:600;">${home.team.displayName}</div>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:center;font-size:1.5em;font-weight:bold;min-width:40px;">VS</div>
-      <div class="apple-team apple-right" style="flex:1; min-width:220px; text-align:center;">
-        <img src="${home.team.logo}" alt="${home.team.displayName}" class="apple-team-logo" style="height:56px;margin-bottom:8px;"/>
-        <div class="apple-team-name" style="font-weight:bold;font-size:1.15em;margin-bottom:10px;">${home.team.displayName}</div>
-        ${getStatsTable(home)}
-      </div>
+      <table class="apple-comparison-table" style="width:100%;border-collapse:separate;border-spacing:0 4px;">
+        <tbody>
+        ${allLabels.map(label => `
+          <tr>
+            <td style="text-align:center;width:32%;font-weight:500;">${getStatValue(away, label)}</td>
+            <td style="text-align:center;width:36%;color:#bbb;font-size:.99em;">${label}</td>
+            <td style="text-align:center;width:32%;font-weight:500;">${getStatValue(home, label)}</td>
+          </tr>
+        `).join('')}
+        </tbody>
+      </table>
     </div>
   `;
 } catch (err) {
