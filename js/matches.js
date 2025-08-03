@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
               overlay.querySelector('.tab-pbp').innerHTML = `<p style="padding:32px;text-align:center;">No play-by-play available for college football games.</p>`;
             }
   
-// STATS TAB (Apple Sports style)
+// STATS TAB (Apple Sports style, centrado, sin barras)
 try {
   const boxscoreUrl = currentLeague === 'nfl'
     ? `/api/espn-boxscore-cdn?gameId=${evt.id}`
@@ -258,73 +258,44 @@ try {
     : boxData.boxscore?.teams || [];
   if (teams.length !== 2) throw new Error("No team stats found.");
 
-  // Las stats que quieres mostrar y sus labels
-  const statsList = [
-    { label: "Total Yards", key: "Total Yards" },
-    { label: "Passing", key: "Passing" },
-    { label: "Rushing", key: "Rushing" },
-    { label: "Turnovers", key: "Turnovers" },
-    { label: "1st Downs", key: "1st Downs" },
-    { label: "Int. Thrown", key: "Interceptions thrown" },
-    { label: "Fumbles Lost", key: "Fumbles lost" },
-    { label: "Penalties", key: "Penalties" },
-    { label: "Sacks", key: "Sacks-Yards " },
-    { label: "Red Zone", key: "Red Zone (Made-Att)" },
-    { label: "3rd Downs", key: "3rd down efficiency" },
-  ];
-
-  // <<--- DEFINE ESTA FUNCIÓN AQUÍ --->
-  function getStat(team, key) {
-    const found = team.statistics.find(s =>
-      (s.label || '').toLowerCase().includes(key.toLowerCase())
-    );
-    return found ? found.displayValue : '-';
+  // Mostrar todos los stats posibles de cada equipo
+  function getStatsTable(team) {
+    if (!team.statistics || !team.statistics.length) return '';
+    return `
+      <table class="apple-stats-table" style="margin: 0 auto;">
+        <thead>
+          <tr>
+            <th style="text-align:center;">Stat</th>
+            <th style="text-align:center;">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${team.statistics.map(stat => `
+            <tr>
+              <td style="text-align:center;">${stat.label}</td>
+              <td style="text-align:center;">${stat.displayValue}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
   }
 
   const home = teams[1], away = teams[0];
-  const colorHome = home.team.color ? (home.team.color.startsWith('#') ? home.team.color : `#${home.team.color}`) : "#0084ff";
-  const colorAway = away.team.color ? (away.team.color.startsWith('#') ? away.team.color : `#${away.team.color}`) : "#fe4444";
-
-  const maxValues = statsList.map(stat => {
-    let a = getStat(away, stat.key).replace(/[^0-9]/g, '');
-    let h = getStat(home, stat.key).replace(/[^0-9]/g, '');
-    a = parseInt(a) || 0; h = parseInt(h) || 0;
-    return Math.max(a, h);
-  });
 
   overlay.querySelector('.tab-stats').innerHTML = `
-    <div class="apple-stats-header">
-      <div class="apple-team apple-left">
-        <img src="${away.team.logo}" alt="${away.team.displayName}" class="apple-team-logo"/>
-        <div class="apple-team-name">${away.team.displayName}</div>
+    <div class="apple-stats-header" style="display: flex; justify-content: center; align-items: flex-start; gap: 32px; flex-wrap: wrap;">
+      <div class="apple-team apple-left" style="flex:1; min-width:220px; text-align:center;">
+        <img src="${away.team.logo}" alt="${away.team.displayName}" class="apple-team-logo" style="height:56px;margin-bottom:8px;"/>
+        <div class="apple-team-name" style="font-weight:bold;font-size:1.15em;margin-bottom:10px;">${away.team.displayName}</div>
+        ${getStatsTable(away)}
       </div>
-      <div class="apple-vs">vs</div>
-      <div class="apple-team apple-right">
-        <img src="${home.team.logo}" alt="${home.team.displayName}" class="apple-team-logo"/>
-        <div class="apple-team-name">${home.team.displayName}</div>
+      <div style="display:flex;align-items:center;justify-content:center;font-size:1.5em;font-weight:bold;min-width:40px;">VS</div>
+      <div class="apple-team apple-right" style="flex:1; min-width:220px; text-align:center;">
+        <img src="${home.team.logo}" alt="${home.team.displayName}" class="apple-team-logo" style="height:56px;margin-bottom:8px;"/>
+        <div class="apple-team-name" style="font-weight:bold;font-size:1.15em;margin-bottom:10px;">${home.team.displayName}</div>
+        ${getStatsTable(home)}
       </div>
-    </div>
-    <div class="apple-split-stats">
-      ${statsList.map((stat, i) => {
-        const leftVal = getStat(away, stat.key);
-        const rightVal = getStat(home, stat.key);
-        let leftNum = parseInt(leftVal.replace(/[^0-9]/g, '')) || 0;
-        let rightNum = parseInt(rightVal.replace(/[^0-9]/g, '')) || 0;
-        let leftBar = maxValues[i] > 0 ? `<div class="stat-bar left-bar" style="background:linear-gradient(90deg,${colorAway},${colorAway}cc);width:${Math.max(12, leftNum/maxValues[i]*100)}%"></div>` : '';
-        let rightBar = maxValues[i] > 0 ? `<div class="stat-bar right-bar" style="background:linear-gradient(90deg,${colorHome},${colorHome}cc);width:${Math.max(12, rightNum/maxValues[i]*100)}%"></div>` : '';
-        return `
-        <div class="apple-stat-row">
-          <div class="apple-stat-value left">
-            <span>${leftVal}</span>
-            ${leftBar}
-          </div>
-          <div class="apple-stat-label">${stat.label}</div>
-          <div class="apple-stat-value right">
-            <span>${rightVal}</span>
-            ${rightBar}
-          </div>
-        </div>`;
-      }).join('')}
     </div>
   `;
 } catch (err) {
