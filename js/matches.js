@@ -280,7 +280,16 @@ document.addEventListener('DOMContentLoaded', () => {
               `;
               setTimeout(() => {
                 const ctx = document.getElementById('statsChart').getContext('2d');
+                // Gradientes PRO
+                const grad1 = ctx.createLinearGradient(0, 0, 0, 200);
+                grad1.addColorStop(0, '#2196F3');
+                grad1.addColorStop(1, '#0d47a1');
+                const grad2 = ctx.createLinearGradient(0, 0, 0, 200);
+                grad2.addColorStop(0, '#EF7C08');
+                grad2.addColorStop(1, '#ff9800');
+
                 if (window.statsChartInstance) window.statsChartInstance.destroy();
+
                 window.statsChartInstance = new Chart(ctx, {
                   type: 'bar',
                   data: {
@@ -289,20 +298,63 @@ document.addEventListener('DOMContentLoaded', () => {
                       {
                         label: teamNames[0],
                         data: values.map(v => v[0]),
-                        backgroundColor: '#2196F3'
+                        backgroundColor: grad1,
+                        borderRadius: 12,
+                        borderSkipped: false,
+                        borderWidth: 2
                       },
                       {
                         label: teamNames[1],
                         data: values.map(v => v[1]),
-                        backgroundColor: '#EF7C08'
+                        backgroundColor: grad2,
+                        borderRadius: 12,
+                        borderSkipped: false,
+                        borderWidth: 2
                       }
                     ]
                   },
                   options: {
                     responsive: false,
-                    plugins: { legend: { display: true, position: 'top' } },
-                    scales: { y: { beginAtZero: true } }
-                  }
+                    plugins: {
+                      legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                          font: { size: 16, family: 'Poppins,sans-serif' }
+                        }
+                      },
+                      tooltip: {
+                        enabled: true,
+                        callbacks: {
+                          label: function(context) {
+                            return `${context.dataset.label}: ${context.parsed.y}`;
+                          }
+                        }
+                      },
+                      datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        color: '#fff',
+                        font: { weight: 'bold', size: 15 }
+                      }
+                    },
+                    animation: {
+                      duration: 1600,
+                      easing: 'easeOutElastic'
+                    },
+                    scales: {
+                      x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Poppins,sans-serif', size: 13 } }
+                      },
+                      y: {
+                        beginAtZero: true,
+                        grid: { color: '#37415122' },
+                        ticks: { font: { family: 'Poppins,sans-serif', size: 13 } }
+                      }
+                    }
+                  },
+                  plugins: [ChartDataLabels]
                 });
               }, 60);
   
