@@ -260,64 +260,73 @@ try {
 
   // Las stats que quieres mostrar y sus labels
   const statsList = [
-    { key: 'Total Yards', label: 'Total Yards' },
-    { key: 'Passing', label: 'Passing' },
-    { key: 'Rushing', label: 'Rushing' },
-    { key: 'Turnovers', label: 'Turnovers' },
-    { key: '1st Downs', label: "1st Downs" }
+    { label: "Total Yards", key: "Total Yards" },
+    { label: "Passing", key: "Passing" },
+    { label: "Rushing", key: "Rushing" },
+    { label: "Turnovers", key: "Turnovers" },
+    { label: "1st Downs", key: "1st Downs" },
+    { label: "Interceptions", key: "Interceptions thrown" },
+    { label: "Fumbles Lost", key: "Fumbles lost" },
+    { label: "Penalties", key: "Penalties" },
+    { label: "Sacks", key: "Sacks-Yards Lost" },
+    { label: "Red Zone", key: "Red Zone (Made-Att)" },
+    { label: "3rd Downs", key: "3rd down efficiency" },
   ];
 
-  const teamNames = teams.map(t => t.team.displayName);
-  const teamLogos = teams.map(t => t.team.logo);
-  const teamColors = teams.map(t => t.team.color ? `#${t.team.color}` : "#2196F3");
-  const statsValues = statsList.map(stat => {
-    return teams.map(team => {
-      const s = team.statistics.find(st => st.label === stat.label);
-      return s ? parseInt((s.displayValue || "0").replace(/,/g, '')) || 0 : 0;
-    });
+  // <<--- DEFINE ESTA FUNCIÓN AQUÍ --->
+  function getStat(team, key) {
+    const found = team.statistics.find(s =>
+      (s.label || '').toLowerCase().includes(key.toLowerCase())
+    );
+    return found ? found.displayValue : '-';
+  }
+
+  const home = teams[1], away = teams[0];
+  const colorHome = home.team.color ? (home.team.color.startsWith('#') ? home.team.color : `#${home.team.color}`) : "#0084ff";
+  const colorAway = away.team.color ? (away.team.color.startsWith('#') ? away.team.color : `#${away.team.color}`) : "#fe4444";
+
+  const maxValues = statsList.map(stat => {
+    let a = getStat(away, stat.key).replace(/[^0-9]/g, '');
+    let h = getStat(home, stat.key).replace(/[^0-9]/g, '');
+    a = parseInt(a) || 0; h = parseInt(h) || 0;
+    return Math.max(a, h);
   });
 
-  // Busca el máximo valor de stats para que la barra sea proporcional
-  const maxValue = Math.max(...statsValues.flat().map(Number), 1);
-
-  // HTML horizontal mirror bars
   overlay.querySelector('.tab-stats').innerHTML = `
-  <div class="apple-stats-header">
-    <div class="apple-team apple-left">
-      <img src="${away.team.logo}" alt="${away.team.displayName}" class="apple-team-logo"/>
-      <div class="apple-team-name">${away.team.displayName}</div>
+    <div class="apple-stats-header">
+      <div class="apple-team apple-left">
+        <img src="${away.team.logo}" alt="${away.team.displayName}" class="apple-team-logo"/>
+        <div class="apple-team-name">${away.team.displayName}</div>
+      </div>
+      <div class="apple-vs">vs</div>
+      <div class="apple-team apple-right">
+        <img src="${home.team.logo}" alt="${home.team.displayName}" class="apple-team-logo"/>
+        <div class="apple-team-name">${home.team.displayName}</div>
+      </div>
     </div>
-    <div class="apple-vs">vs</div>
-    <div class="apple-team apple-right">
-      <img src="${home.team.logo}" alt="${home.team.displayName}" class="apple-team-logo"/>
-      <div class="apple-team-name">${home.team.displayName}</div>
+    <div class="apple-split-stats">
+      ${statsList.map((stat, i) => {
+        const leftVal = getStat(away, stat.key);
+        const rightVal = getStat(home, stat.key);
+        let leftNum = parseInt(leftVal.replace(/[^0-9]/g, '')) || 0;
+        let rightNum = parseInt(rightVal.replace(/[^0-9]/g, '')) || 0;
+        let leftBar = maxValues[i] > 0 ? `<div class="stat-bar left-bar" style="background:linear-gradient(90deg,${colorAway},${colorAway}cc);width:${Math.max(12, leftNum/maxValues[i]*100)}%"></div>` : '';
+        let rightBar = maxValues[i] > 0 ? `<div class="stat-bar right-bar" style="background:linear-gradient(90deg,${colorHome},${colorHome}cc);width:${Math.max(12, rightNum/maxValues[i]*100)}%"></div>` : '';
+        return `
+        <div class="apple-stat-row">
+          <div class="apple-stat-value left">
+            <span>${leftVal}</span>
+            ${leftBar}
+          </div>
+          <div class="apple-stat-label">${stat.label}</div>
+          <div class="apple-stat-value right">
+            ${rightBar}
+            <span>${rightVal}</span>
+          </div>
+        </div>`;
+      }).join('')}
     </div>
-  </div>
-  <div class="apple-split-stats">
-    ${statsList.map((stat, i) => {
-      const leftVal = getStat(away, stat.key);
-      const rightVal = getStat(home, stat.key);
-      let leftNum = parseInt(leftVal.replace(/[^0-9]/g, '')) || 0;
-      let rightNum = parseInt(rightVal.replace(/[^0-9]/g, '')) || 0;
-      // Barra izquierda
-      let leftBar = maxValues[i] > 0 ? `<div class="stat-bar left-bar" style="background:linear-gradient(90deg,${colorAway},${colorAway}99);width:${Math.max(12, leftNum/maxValues[i]*100)}%"></div>` : '';
-      // Barra derecha
-      let rightBar = maxValues[i] > 0 ? `<div class="stat-bar right-bar" style="background:linear-gradient(90deg,${colorHome},${colorHome}99);width:${Math.max(12, rightNum/maxValues[i]*100)}%"></div>` : '';
-      return `
-      <div class="apple-stat-row">
-        <div class="apple-stat-value left">
-          <span>${leftVal}</span>
-          ${leftBar}
-        </div>
-        <div class="apple-stat-label">${stat.label}</div>
-        <div class="apple-stat-value right">
-          ${rightBar}
-          <span>${rightVal}</span>
-        </div>
-      </div>`;
-    }).join('')}
-  </div>
-`;
+  `;
 } catch (err) {
   overlay.querySelector('.tab-stats').innerHTML = `
     <div style="padding:24px;text-align:center;">
