@@ -405,12 +405,14 @@
     flex-direction: column;
     align-items: center;
     min-width: 120px;
+    text-align: center;
   }
   
   .apple-team-logo {
     width: 46px;
     height: 46px;
     object-fit: contain;
+    align-self: center;
     margin-bottom: 2px;
     border-radius: 50%;
     border: 2px solid #222;
@@ -459,7 +461,7 @@
     position: relative;
     font-size: 1.16em;
     font-weight: 700;
-    color: #fff;
+    color: var(--primary-color);
     min-width: 38px;
     min-height: 20px;
     display: flex;

@@ -268,7 +268,7 @@ try {
     { label: "Int. Thrown", key: "Interceptions thrown" },
     { label: "Fumbles Lost", key: "Fumbles lost" },
     { label: "Penalties", key: "Penalties" },
-    { label: "Sacks", key: "Sacks-Yards Lost" },
+    { label: "Sacks", key: "Sacks-Yards " },
     { label: "Red Zone", key: "Red Zone (Made-Att)" },
     { label: "3rd Downs", key: "3rd down efficiency" },
   ];
