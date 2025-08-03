@@ -394,30 +394,54 @@
   }
 
   .apple-stats-header {
-    display: flex; justify-content: space-between; align-items: center; margin: 16px 0 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    margin: 18px 0 10px 0;
   }
+  
   .apple-team {
-    display: flex; flex-direction: column; align-items: center; width: 140px;
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    font-size: 1.11em;
+    font-weight: 600;
+    color: #222;
   }
-  .apple-team img {
-    width: 34px; height: 34px; border-radius: 50%; object-fit: contain; border: 2px solid #222; background: #181818;
+  .apple-left img, .apple-right img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.07);
   }
-  .apple-team span { color: #fff; font-weight: 600; font-size: 1.12em; margin-top: 5px; text-align: center; }
-  .apple-vs { color: #ccc; font-weight: 700; font-size: 1.08em; }
-  .apple-split-stats { margin-top: 8px; }
-  .apple-stat-row {
-    display: flex; align-items: center; justify-content: space-between; margin: 9px 0;
+  
+  .apple-vs {
+    font-size: 1.15em;
+    color: #bdbdbd;
+    font-weight: bold;
   }
-  .apple-stat-label {
-    width: 120px; text-align: center; color: #aaa; font-weight: 600; font-size: 1.09em;
+  
+  .apple-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.93em;
+    color: #777;
+    margin: 10px 0 4px 0;
+    gap: 0.25em;
   }
-  .apple-stat-value {
-    width: 128px; min-width: 52px; display: flex; align-items: center; gap: 7px; font-weight: 700; color: #fff; position: relative;
+  
+  .pbp-card canvas#statsChart {
+    display: block;
+    margin: 0 auto 6px auto;
+    box-shadow: 0 0 0 0 transparent;
+    border-radius: 16px;
+    background: #f8fafd;
   }
-  .apple-stat-value.left { justify-content: flex-end; }
-  .apple-stat-value.right { justify-content: flex-start; }
-  .stat-bar {
-    border-radius: 10px; height: 13px; min-width: 8px; max-width: 85px;
-    transition: width .2s cubic-bezier(.7,0,.7,1.03);
-    margin-left: 4px; margin-right: 4px;
+  
+  @media (max-width: 500px) {
+    .apple-stats-header { gap: 0.6rem; }
+    .apple-left img, .apple-right img { width: 24px; height: 24px; }
+    .apple-labels { font-size: 0.77em; }
   }
