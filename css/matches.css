@@ -393,8 +393,43 @@
     100% { box-shadow: 0 0 14px #ef7c08aa, 0 0 28px #ef7c0877; }
   }
 
-  .apple-mirror-stats {
-    padding: 12px 0 4px 0;
+  .apple-split-stats {
+    margin: 30px 0 10px 0;
+  }
+  .apple-stat-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .apple-stat-label {
+    flex: 0 0 150px;
+    text-align: center;
+    font-weight: 700;
+    color: #888;
+    font-size: 1.16em;
+    letter-spacing: 0.01em;
+  }
+  .apple-stat-value {
+    flex: 1 1 0;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.12em;
+  }
+  .apple-stat-value.left {
+    justify-content: flex-end;
+  }
+  .apple-stat-value.right {
+    justify-content: flex-start;
+  }
+  .stat-bar {
+    height: 22px;
+    border-radius: 14px;
+    margin-left: 7px;
+    margin-right: 7px;
   }
   .mirror-teams {
     display: flex;
