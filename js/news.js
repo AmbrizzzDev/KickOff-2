@@ -5,25 +5,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   const LOAD_INCREMENT = 12;
 
   let currentIndex = 0;
-  let nflNews = [];
+  let nflHeadlines = [];
 
-  // Obtén los artículos desde la nueva API de ESPN News NFL
-  const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=52');
+  const blacklist = [
+    'NHL', 'MLB', 'NBA', 'NCAAM', 'NCAAF', 'NASCAR', 'Soccer', 'F1', 'Golf', 'Tennis', 'Boxing'
+  ];
+
+  const res = await fetch('https://now.core.api.espn.com/v1/sports/news?limit=1000&sport=football');
   const data = await res.json();
-  // Los artículos están en data.articles (array)
-  nflNews = data.articles || [];
+  const headlines = data.headlines || [];
 
-  if (!nflNews.length) {
+  // Filtrar solo NFL
+  nflHeadlines = headlines.filter(item => {
+    if (!item.categories) return false;
+    const hasBlacklisted = item.categories.some(cat =>
+      cat.description && blacklist.includes(cat.description.trim().toUpperCase())
+    );
+    const hasNFL = item.categories.some(cat =>
+      cat.description && cat.description.trim().toUpperCase() === 'NFL'
+    );
+    return hasNFL && !hasBlacklisted;
+  });
+
+  if (!nflHeadlines.length) {
     container.innerHTML = '<p>No NFL news available.</p>';
     return;
   }
 
   function renderNews(from, to) {
-    nflNews.slice(from, to).forEach(item => {
-      const img = item.images?.[0]?.url || 'img/placeholder.jpg';
-      const title = item.headline || 'Untitled';
+    nflHeadlines.slice(from, to).forEach(item => {
+      const img = item.images?.[0]?.url || item.video?.[0]?.posterImages?.default?.href || 'img/placeholder.jpg';
+      const title = item.title || item.headline || 'Untitled';
       const shortDesc = item.description || '';
-      const link = item.links?.web?.href || item.links?.api?.web?.href || '#';
+      const link = item.links?.web?.href || '#';
 
       const card = document.createElement('div');
       card.className = 'news-card';
@@ -54,12 +68,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderNews(currentIndex, currentIndex + LOAD_INCREMENT);
     currentIndex += LOAD_INCREMENT;
 
-    if (currentIndex >= nflNews.length) {
+    if (currentIndex >= nflHeadlines.length) {
       loadMoreBtn.style.display = 'none';
     }
   });
 });
-
 
 
 const bestReveals = [
