@@ -396,40 +396,100 @@
   .apple-stats-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 2.5rem;
-    margin: 18px 0 10px 0;
+    justify-content: space-between;
+    margin-bottom: 14px;
   }
   
   .apple-team {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.7em;
-    font-size: 1.11em;
-    font-weight: 600;
-    color: #222;
+    min-width: 120px;
   }
-  .apple-left img, .apple-right img {
-    width: 32px;
-    height: 32px;
+  
+  .apple-team-logo {
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
+    margin-bottom: 2px;
     border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.07);
+    border: 2px solid #222;
+    background: #181818;
+  }
+  
+  .apple-team-name {
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    color: #fff;
+    line-height: 1.1;
+    margin-top: 2px;
   }
   
   .apple-vs {
-    font-size: 1.15em;
-    color: #bdbdbd;
-    font-weight: bold;
+    font-size: 1.3em;
+    font-weight: 600;
+    color: #999;
   }
   
-  .apple-labels {
+  .apple-split-stats {
     display: flex;
-    justify-content: space-between;
-    font-size: 0.93em;
-    color: #777;
-    margin: 10px 0 4px 0;
-    gap: 0.25em;
+    flex-direction: column;
+    gap: 13px;
+    padding-bottom: 8px;
+  }
+  
+  .apple-stat-row {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr 1.7fr;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+  }
+  
+  .apple-stat-label {
+    text-align: center;
+    font-weight: 700;
+    color: #a1a1a1;
+    font-size: 1.09em;
+    white-space: nowrap;
+  }
+  
+  .apple-stat-value {
+    position: relative;
+    font-size: 1.16em;
+    font-weight: 700;
+    color: #fff;
+    min-width: 38px;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .apple-stat-value.left {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .apple-stat-value.right {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+  
+  .stat-bar {
+    height: 12px;
+    border-radius: 9px;
+    margin: 0 3px;
+    transition: width 0.4s cubic-bezier(.8,.18,.37,1.02);
+  }
+  
+  .left-bar {
+    margin-left: 8px;
+  }
+  
+  .right-bar {
+    margin-right: 8px;
   }
   
   .pbp-card canvas#statsChart {

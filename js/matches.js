@@ -282,34 +282,42 @@ try {
 
   // HTML horizontal mirror bars
   overlay.querySelector('.tab-stats').innerHTML = `
-    <div class="apple-mirror-stats">
-      <div class="mirror-teams">
-        <div class="team team-left">
-          <img src="${teamLogos[0]}" alt="${teamNames[0]}"/>
-          <span>${teamNames[0]}</span>
-        </div>
-        <div class="team team-right">
-          <img src="${teamLogos[1]}" alt="${teamNames[1]}"/>
-          <span>${teamNames[1]}</span>
-        </div>
-      </div>
-      <div class="mirror-table">
-        ${statsList.map((stat, i) => `
-          <div class="mirror-row">
-            <div class="bar-wrap left">
-              <div class="bar" style="width:${100 * statsValues[i][0] / maxValue}%;background:${teamColors[0]};"></div>
-              <span class="value">${statsValues[i][0]}</span>
-            </div>
-            <span class="stat-label">${stat.label}</span>
-            <div class="bar-wrap right">
-              <div class="bar" style="width:${100 * statsValues[i][1] / maxValue}%;background:${teamColors[1]};"></div>
-              <span class="value">${statsValues[i][1]}</span>
-            </div>
-          </div>
-        `).join('')}
-      </div>
+  <div class="apple-stats-header">
+    <div class="apple-team apple-left">
+      <img src="${away.team.logo}" alt="${away.team.displayName}" class="apple-team-logo"/>
+      <div class="apple-team-name">${away.team.displayName}</div>
     </div>
-  `;
+    <div class="apple-vs">vs</div>
+    <div class="apple-team apple-right">
+      <img src="${home.team.logo}" alt="${home.team.displayName}" class="apple-team-logo"/>
+      <div class="apple-team-name">${home.team.displayName}</div>
+    </div>
+  </div>
+  <div class="apple-split-stats">
+    ${statsList.map((stat, i) => {
+      const leftVal = getStat(away, stat.key);
+      const rightVal = getStat(home, stat.key);
+      let leftNum = parseInt(leftVal.replace(/[^0-9]/g, '')) || 0;
+      let rightNum = parseInt(rightVal.replace(/[^0-9]/g, '')) || 0;
+      // Barra izquierda
+      let leftBar = maxValues[i] > 0 ? `<div class="stat-bar left-bar" style="background:linear-gradient(90deg,${colorAway},${colorAway}99);width:${Math.max(12, leftNum/maxValues[i]*100)}%"></div>` : '';
+      // Barra derecha
+      let rightBar = maxValues[i] > 0 ? `<div class="stat-bar right-bar" style="background:linear-gradient(90deg,${colorHome},${colorHome}99);width:${Math.max(12, rightNum/maxValues[i]*100)}%"></div>` : '';
+      return `
+      <div class="apple-stat-row">
+        <div class="apple-stat-value left">
+          <span>${leftVal}</span>
+          ${leftBar}
+        </div>
+        <div class="apple-stat-label">${stat.label}</div>
+        <div class="apple-stat-value right">
+          ${rightBar}
+          <span>${rightVal}</span>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+`;
 } catch (err) {
   overlay.querySelector('.tab-stats').innerHTML = `
     <div style="padding:24px;text-align:center;">
