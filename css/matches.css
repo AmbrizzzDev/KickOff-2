@@ -186,7 +186,10 @@
 .score {
     font-size: 1.8rem;
     font-weight: bold;
-    color: var(--secondary-color);
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .vs-text {
