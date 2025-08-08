@@ -8,6 +8,33 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentLeague = 'nfl'; // DEFAULT: NFL
   let currentSeasonType = '1';
 
+  // Build base ESPN scoreboard URL (no week param)
+  function buildScoreboardBaseUrl(league, seasonType) {
+    const year = 2025; // update if needed
+    if (league === 'nfl') {
+      return `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${year}&seasontype=${seasonType}`;
+    }
+    // cfb
+    return `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${year}&seasontype=${seasonType}`;
+  }
+
+  // Helper to get current week number from ESPN API for a league/seasonType
+  async function getCurrentWeekNumber(league = currentLeague, seasonType = currentSeasonType) {
+    try {
+      const url = buildScoreboardBaseUrl(league, seasonType); // no week -> current
+      const res = await fetch(url);
+      const data = await res.json();
+      // ESPN usually returns a top-level week object
+      const wk = data?.week?.number || data?.leagues?.[0]?.calendar?.current?.week?.number;
+      if (wk && Number.isFinite(Number(wk))) return String(wk);
+      // fallback: if events exist, try to read from first event
+      const evtWeek = data?.events?.[0]?.week?.number;
+      return evtWeek ? String(evtWeek) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   // Dynamic update of seasonTypeFilter based on league
   function updateSeasonTypeFilterForLeague() {
     if (currentLeague === 'nfl') {
@@ -44,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2025&seasontype=3&week=${week}`;
       }
     } else {
-      // NCAA: ahora soporta regular season y bowls (postseason)
+      // NCAA
       if (currentSeasonType === '2') {
         return `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=2025&seasontype=2&week=${week}`;
       } else if (currentSeasonType === '3') {
@@ -333,6 +360,16 @@ try {
     
 
   function updateWeekFilterForSeasonType() {
+  // Initialize: set up filters, auto-select current week from API, then render
+  async function initDefaultWeekAndRender() {
+    updateSeasonTypeFilterForLeague();
+    updateWeekFilterForSeasonType();
+    const wk = await getCurrentWeekNumber();
+    if (wk && [...weekFilter.options].some(o => o.value === wk)) {
+      weekFilter.value = wk;
+    }
+    await renderMatches();
+  }
     const weekFilter = document.getElementById('weekFilter');
     if (currentLeague === 'nfl') {
       if (currentSeasonType === '1') {
@@ -405,7 +442,12 @@ try {
       else currentSeasonType = '1';
       updateSeasonTypeFilterForLeague();
       updateWeekFilterForSeasonType();
-      renderMatches();
+      getCurrentWeekNumber().then(wk => {
+        if (wk && [...weekFilter.options].some(o => o.value === wk)) {
+          weekFilter.value = wk;
+        }
+        renderMatches();
+      });
     });
   });
 
@@ -414,7 +456,12 @@ try {
   seasonTypeFilter.addEventListener('change', () => {
     currentSeasonType = seasonTypeFilter.value;
     updateWeekFilterForSeasonType();
-    renderMatches();
+    getCurrentWeekNumber().then(wk => {
+      if (wk && [...weekFilter.options].some(o => o.value === wk)) {
+        weekFilter.value = wk;
+      }
+      renderMatches();
+    });
   });
 
   searchInput.addEventListener('input', () => {
@@ -427,9 +474,7 @@ try {
 
   
 
-  updateSeasonTypeFilterForLeague();
-  updateWeekFilterForSeasonType();
-  renderMatches();
+  initDefaultWeekAndRender();
   setInterval(() => {
     const scrollY = window.scrollY;
     renderMatches().then(() => {
