@@ -35,6 +35,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Initialize filters, auto-select current week from API, then render
+  async function initDefaultWeekAndRender() {
+    updateSeasonTypeFilterForLeague();
+    updateWeekFilterForSeasonType();
+    const wk = await getCurrentWeekNumber();
+    if (wk && [...weekFilter.options].some(o => o.value === wk)) {
+      weekFilter.value = wk;
+    }
+    await renderMatches();
+  }
+
   // Dynamic update of seasonTypeFilter based on league
   function updateSeasonTypeFilterForLeague() {
     if (currentLeague === 'nfl') {
@@ -345,8 +356,9 @@ try {
           // Evita múltiples intervalos para el mismo partido
           if (liveIntervals[evt.id]) clearInterval(liveIntervals[evt.id]);
           liveIntervals[evt.id] = setInterval(() => {
-            updateLiveGameCard(evt.id, matchCard);
+            updateLiveGameCard(evt.id, matchCard, currentLeague);
           }, 20000);
+          updateLiveGameCard(evt.id, matchCard, currentLeague);
         } else {
           // Si el partido ya no está en vivo, limpia el intervalo
           if (liveIntervals[evt.id]) {
@@ -360,16 +372,6 @@ try {
     
 
   function updateWeekFilterForSeasonType() {
-  // Initialize: set up filters, auto-select current week from API, then render
-  async function initDefaultWeekAndRender() {
-    updateSeasonTypeFilterForLeague();
-    updateWeekFilterForSeasonType();
-    const wk = await getCurrentWeekNumber();
-    if (wk && [...weekFilter.options].some(o => o.value === wk)) {
-      weekFilter.value = wk;
-    }
-    await renderMatches();
-  }
     const weekFilter = document.getElementById('weekFilter');
     if (currentLeague === 'nfl') {
       if (currentSeasonType === '1') {
@@ -473,7 +475,6 @@ try {
   });
 
   
-
   initDefaultWeekAndRender();
   setInterval(() => {
     const scrollY = window.scrollY;
