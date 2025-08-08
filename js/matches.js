@@ -203,6 +203,29 @@ document.addEventListener('DOMContentLoaded', () => {
           <p class="match-week">${getWeekLabel(weekNumber)}</p>
           <p class="match-stadium">@ ${comp.venue?.fullName || 'TBD'}</p>
         </div>`;
+      // === FINAL WINNER/TIE HIGHLIGHT ===
+      (function applyFinalStyling(){
+        const teamEls = matchCard.querySelectorAll('.team');
+        const awayEl = teamEls[0];
+        const homeEl = teamEls[1];
+        // Clean previous classes
+        [awayEl, homeEl].forEach(el => el && el.classList.remove('winner-final','tie-final'));
+        if (isFinal && awayEl && homeEl) {
+          const aScore = Number(away?.score ?? 0);
+          const hScore = Number(home?.score ?? 0);
+          if (Number.isFinite(aScore) && Number.isFinite(hScore)) {
+            if (aScore > hScore) {
+              awayEl.classList.add('winner-final');
+            } else if (hScore > aScore) {
+              homeEl.classList.add('winner-final');
+            } else {
+              // tie
+              awayEl.classList.add('tie-final');
+              homeEl.classList.add('tie-final');
+            }
+          }
+        }
+      })();
 
         if ((isLive || isFinal)) {
           matchCard.addEventListener('click', async () => {
@@ -532,6 +555,23 @@ function updateLiveGameCard(gameId, card, league) {
         if (isLive) badge = '<div class="live-badge">LIVE</div>';
         else if (status.type?.state === 'post') badge = '<div class="final-badge">FINAL</div>';
         matchHeader.innerHTML = `${badge}<span class="match-time">${timeDisplay}</span>`;
+      }
+      // Winner/Tie final highlight (live updates)
+      const teamEls = card.querySelectorAll('.team');
+      const awayEl = teamEls[0];
+      const homeEl = teamEls[1];
+      [awayEl, homeEl].forEach(el => el && el.classList.remove('winner-final','tie-final'));
+      if (status.type?.state === 'post' && awayEl && homeEl) {
+        const aScore = Number(away?.score ?? 0);
+        const hScore = Number(home?.score ?? 0);
+        if (aScore > hScore) {
+          awayEl.classList.add('winner-final');
+        } else if (hScore > aScore) {
+          homeEl.classList.add('winner-final');
+        } else {
+          awayEl.classList.add('tie-final');
+          homeEl.classList.add('tie-final');
+        }
       }
     } catch (e) {
       // Ignore update errors

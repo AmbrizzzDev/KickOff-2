@@ -510,3 +510,33 @@
     .apple-left img, .apple-right img { width: 24px; height: 24px; }
     .apple-labels { font-size: 0.77em; }
   }
+
+/* Ganador - Final */
+.team.winner-final {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+  border-radius: 14px;
+  border: 1px solid #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 0 35px rgba(255, 215, 0, 0.2);
+  transform: scale(1.02);
+  padding: 0.4rem;
+}
+.team.winner-final .team-name {
+  color: #ffe680;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+}
+
+/* Empate - Final */
+.team.tie-final {
+  background: linear-gradient(135deg, rgba(128, 128, 128, 0.15), rgba(128, 128, 128, 0.05));
+  border-radius: 14px;
+  border: 2px solid #b0b0b0;
+  box-shadow: 0 0 15px rgba(176, 176, 176, 0.4), 0 0 35px rgba(176, 176, 176, 0.2);
+  transform: scale(1.01);
+  padding: 0.4rem;
+}
+.team.tie-final .team-name {
+  color: #d1d5db;
+  font-weight: 600;
+  text-shadow: 0 0 6px rgba(176, 176, 176, 0.6);
+}
