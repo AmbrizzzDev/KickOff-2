@@ -186,7 +186,7 @@
 .score {
     font-size: 1.8rem;
     font-weight: bold;
-    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(45deg,rgba(184, 37, 37, 1) 0%, rgba(127, 42, 156, 1) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
