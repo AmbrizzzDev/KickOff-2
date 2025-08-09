@@ -1,3 +1,5 @@
+const liveIntervals = {};
+const suspendedGames = new Set(["401773016"]);
 document.addEventListener('DOMContentLoaded', () => {
   const matchesContainer = document.getElementById('matchesContainer');
   const toggleButtons = document.querySelectorAll('.toggle-btn');
@@ -8,10 +10,21 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentLeague = 'nfl'; // DEFAULT: NFL
   let currentSeasonType = '1';
 
-  // Manually mark suspended games here (event IDs as strings)
-  const suspendedGames = new Set([
-    "401773016"
-  ]);
+
+  // Intervalo dinámico según carga y liga
+  function computeLiveIntervalMs(liveCount, league) {
+    if (league === 'cfb') {
+      // College suele tener muchos juegos
+      if (liveCount <= 6) return 5000;     // 5s
+      if (liveCount <= 12) return 10000;   // 10s
+      return 15000;                        // 15s
+    } else {
+      // NFL
+      if (liveCount <= 6) return 5000;     // 5s
+      if (liveCount <= 12) return 10000;   // 10s
+      return 15000;                        // 15s
+    }
+  }
 
   // Build base ESPN scoreboard URL (no week param)
   function buildScoreboardBaseUrl(league, seasonType) {
@@ -162,6 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
       matchesContainer.innerHTML = '<p>No matches available.</p>';
       return;
     }
+
+    // Calcula juegos en vivo para decidir el intervalo de actualización
+    const liveCount = allGames.filter(g => {
+      const st = g?.competitions?.[0]?.status;
+      return st?.type?.state === 'in';
+    }).length;
+    const intervalMsForThisRender = computeLiveIntervalMs(liveCount, currentLeague);
 
     allGames.forEach(evt => {
       const comp = evt.competitions[0];
@@ -330,15 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
               ? `/api/espn-boxscore-cdn?gameId=${evt.id}`
               : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/boxscore?event=${evt.id}`;
             const boxRes = await fetch(boxscoreUrl);
-            const boxData = await res.json();
-          } catch(e) {
-            // fallback a la misma variable para mantener lo original
-          }
-          try {
-            const boxscoreUrl = currentLeague === 'nfl'
-              ? `/api/espn-boxscore-cdn?gameId=${evt.id}`
-              : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/boxscore?event=${evt.id}`;
-            const boxRes = await fetch(boxscoreUrl);
             const boxData = await boxRes.json();
             const teams = currentLeague === 'nfl'
               ? boxData.gamepackageJSON?.boxscore?.teams || []
@@ -401,9 +412,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isLive) {
         matchCard.setAttribute('data-id', evt.id);
         if (liveIntervals[evt.id]) clearInterval(liveIntervals[evt.id]);
+        // programa solo si está en vivo, con intervalo dinámico
         liveIntervals[evt.id] = setInterval(() => {
           updateLiveGameCard(evt.id, matchCard, currentLeague);
-        }, 20000);
+        }, intervalMsForThisRender);
+        // primer update inmediato
         updateLiveGameCard(evt.id, matchCard, currentLeague);
       } else {
         if (liveIntervals[evt.id]) {
@@ -525,82 +538,68 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 60000);
 });
 
-const liveIntervals = {};
+async function updateLiveGameCard(gameId, card, league) {
+  const url = league === 'nfl'
+    ? `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${gameId}`
+    : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/summary?event=${gameId}`;
 
-function updateLiveGameCard(gameId, card, league) {
-  // Clean previous interval for this card if any
-  if (liveIntervals[gameId]) {
-    clearInterval(liveIntervals[gameId]);
-  }
-  async function update() {
-    let url;
-    if (league === 'nfl') {
-      url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${gameId}`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    const comp = data.header?.competitions?.[0];
+    if (!comp) return;
+
+    const status = comp.status || {};
+    const isLive = status.type?.state === 'in';
+
+    const isSuspended =
+      suspendedGames.has(String(gameId)) ||
+      (status?.type?.name === 'STATUS_SUSPENDED') ||
+      /suspend/i.test(status?.type?.description || '') ||
+      /suspend/i.test(status?.type?.detail || '');
+
+    // time display
+    let timeDisplay = '';
+    if (isLive && status.period && status.displayClock) {
+      timeDisplay = `Q${status.period} • ${status.displayClock}`;
     } else {
-      url = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/summary?event=${gameId}`;
+      const d = new Date(comp.date);
+      const date = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      timeDisplay = `${date} | ${time}`;
     }
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      const comp = data.header?.competitions?.[0];
-      if (!comp) return;
-      const status = comp.status || {};
-      const isLive = status.type?.state === 'in';
+    const matchTime = card.querySelector('.match-time');
+    if (matchTime) matchTime.textContent = timeDisplay;
 
-      const isSuspended =
-        suspendedGames.has(String(gameId)) ||
-        (status?.type?.name === 'STATUS_SUSPENDED') ||
-        /suspend/i.test(status?.type?.description || '') ||
-        /suspend/i.test(status?.type?.detail || '');
-
-      // Update time display
-      let timeDisplay = '';
-      if (isLive && status.period && status.displayClock) {
-        timeDisplay = `Q${status.period} • ${status.displayClock}`;
-      } else {
-        const d = new Date(comp.date);
-        const date = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-        const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        timeDisplay = `${date} | ${time}`;
-      }
-      const matchTime = card.querySelector('.match-time');
-      if (matchTime) matchTime.textContent = timeDisplay;
-
-      // Update scores
-      const home = comp.competitors.find(c => c.homeAway === 'home');
-      const away = comp.competitors.find(c => c.homeAway === 'away');
-      const scoreSpans = card.querySelectorAll('.score');
-      if (scoreSpans.length === 2) {
-        scoreSpans[0].textContent = away?.score ?? '0';
-        scoreSpans[1].textContent = home?.score ?? '0';
-      }
-
-      // Update badge
-      const matchHeader = card.querySelector('.match-header');
-      if (matchHeader) {
-        let badge = '';
-        if (isSuspended) badge = '<div class="suspended-badge">SUSPENDED</div>';
-        else if (isLive) badge = '<div class="live-badge">LIVE</div>';
-        else if (status.type?.state === 'post') badge = '<div class="final-badge">FINAL</div>';
-        matchHeader.innerHTML = `${badge}<span class="match-time">${timeDisplay}</span>`;
-      }
-
-      // Reflect suspended state on the card and stop polling if suspended
-      if (isSuspended) {
-        card.classList.add('suspended');
-        card.classList.remove('live');
-        if (liveIntervals[gameId]) {
-          clearInterval(liveIntervals[gameId]);
-          delete liveIntervals[gameId];
-        }
-      } else if (status.type?.state === 'post') {
-        // final: permitir que se aplique highlight de ganador desde render si vuelves a pintar
-        card.classList.remove('live');
-      }
-    } catch (e) {
-      // Ignore update errors
+    // scores
+    const home = comp.competitors.find(c => c.homeAway === 'home');
+    const away = comp.competitors.find(c => c.homeAway === 'away');
+    const scoreSpans = card.querySelectorAll('.score');
+    if (scoreSpans.length === 2) {
+      scoreSpans[0].textContent = away?.score ?? '0';
+      scoreSpans[1].textContent = home?.score ?? '0';
     }
+
+    // badge
+    const matchHeader = card.querySelector('.match-header');
+    if (matchHeader) {
+      let badge = '';
+      if (isSuspended) badge = '<div class="suspended-badge">SUSPENDED</div>';
+      else if (isLive) badge = '<div class="live-badge">LIVE</div>';
+      else if (status.type?.state === 'post') badge = '<div class="final-badge">FINAL</div>';
+      matchHeader.innerHTML = `${badge}<span class="match-time">${timeDisplay}</span>`;
+    }
+
+    // si quedó suspendido o final, detenemos su timer externo
+    if (isSuspended || status.type?.state === 'post') {
+      card.classList.toggle('suspended', isSuspended);
+      card.classList.remove('live');
+      if (liveIntervals[gameId]) {
+        clearInterval(liveIntervals[gameId]);
+        delete liveIntervals[gameId];
+      }
+    }
+  } catch (_) {
+    // silencio
   }
-  update();
-  liveIntervals[gameId] = setInterval(update, 20000);
 }
