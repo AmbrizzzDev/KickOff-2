@@ -184,12 +184,20 @@
 }
 
 .score {
-    font-size: 1.8rem;
-    font-weight: bold;
-    background: linear-gradient(45deg,rgba(184, 37, 37, 1) 0%, rgba(127, 42, 156, 1) 100%);
-    background-clip: text;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--secondary-color); /* Fallback visible */
+}
+
+/* Solo si el navegador soporta -webkit-background-clip:text aplicamos el degradado */
+@supports (-webkit-background-clip: text) {
+  .score {
+    background: linear-gradient(45deg, rgba(184,37,37,1) 0%, rgba(127,42,156,1) 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: transparent; /* ocultamos el fallback */
+  }
 }
 
 .vs-text {
@@ -539,4 +547,28 @@
   color: #d1d5db;
   font-weight: 600;
   text-shadow: 0 0 6px rgba(176, 176, 176, 0.6);
+}
+
+/* Suspended game styling */
+.match-card.suspended,
+.score.suspended {
+  border: 2px dashed #960000;
+  box-shadow: 0 0 0 2px #ff202055, 0 0 16px #ff202044;
+}
+
+.suspended-badge {
+  position: relative;
+  z-index: 2;
+  background: #960000;
+  color: #fff;
+  padding: 0.13em 0.7em;
+  border-radius: 6px;
+  font-size: .98em;
+  letter-spacing: 1px;
+  font-weight: bold;
+  box-shadow: 0 0 7px #ff3232cc;
+  border: 2px solid #ff4d4d;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }

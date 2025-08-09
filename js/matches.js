@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentLeague = 'nfl'; // DEFAULT: NFL
   let currentSeasonType = '1';
 
+  // Manually mark suspended games here (event IDs as strings)
+  const suspendedGames = new Set([
+    "401773016"
+  ]);
+
   // Build base ESPN scoreboard URL (no week param)
   function buildScoreboardBaseUrl(league, seasonType) {
     const year = 2025; // update if needed
@@ -165,6 +170,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const status = comp.status || {};
       const isLive = status.type?.state === 'in';
       const isFinal = status.type?.state === 'post';
+
+      // Detect suspended (manual list OR API hints)
+      const isSuspended =
+        suspendedGames.has(String(evt.id)) ||
+        (status?.type?.name === 'STATUS_SUSPENDED') ||
+        /suspend/i.test(status?.type?.description || '') ||
+        /suspend/i.test(status?.type?.detail || '');
+
       const d = new Date(evt.date);
       const date = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
       const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -176,11 +189,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       let statusBadge = '';
-      if (isLive) statusBadge = '<div class="live-badge">LIVE</div>';
+      if (isSuspended) statusBadge = '<div class="suspended-badge">SUSPENDED</div>';
+      else if (isLive) statusBadge = '<div class="live-badge">LIVE</div>';
       else if (isFinal) statusBadge = '<div class="final-badge">FINAL</div>';
 
       const matchCard = document.createElement('div');
-      matchCard.className = `match-card ${isLive ? 'live' : ''} ${isFinal ? 'final' : ''}`;
+      matchCard.className = `match-card ${isLive ? 'live' : ''} ${isFinal ? 'final' : ''} ${isSuspended ? 'suspended' : ''}`;
       matchCard.innerHTML = `
         <div class="match-header">
           ${statusBadge}
@@ -190,19 +204,20 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="team">
             <img src="${away?.team?.logo || ''}" class="team-logo">
             <span class="team-name">${away?.team?.displayName || 'TBD'}</span>
-            ${(isLive || isFinal) ? `<span class="score">${away?.score ?? '0'}</span>` : ''}
+            ${(isLive || isFinal || isSuspended) ? `<span class="score">${away?.score ?? '0'}</span>` : ''}
           </div>
           <span class="vs-text">VS</span>
           <div class="team">
             <img src="${home?.team?.logo || ''}" class="team-logo">
             <span class="team-name">${home?.team?.displayName || 'TBD'}</span>
-            ${(isLive || isFinal) ? `<span class="score">${home?.score ?? '0'}</span>` : ''}
+            ${(isLive || isFinal || isSuspended) ? `<span class="score">${home?.score ?? '0'}</span>` : ''}
           </div>
         </div>
         <div class="match-details">
           <p class="match-week">${getWeekLabel(weekNumber)}</p>
           <p class="match-stadium">@ ${comp.venue?.fullName || 'TBD'}</p>
         </div>`;
+
       // === FINAL WINNER/TIE HIGHLIGHT ===
       (function applyFinalStyling(){
         const teamEls = matchCard.querySelectorAll('.team');
@@ -210,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const homeEl = teamEls[1];
         // Clean previous classes
         [awayEl, homeEl].forEach(el => el && el.classList.remove('winner-final','tie-final'));
-        if (isFinal && awayEl && homeEl) {
+        if (isFinal && !isSuspended && awayEl && homeEl) {
           const aScore = Number(away?.score ?? 0);
           const hScore = Number(home?.score ?? 0);
           if (Number.isFinite(aScore) && Number.isFinite(hScore)) {
@@ -227,172 +242,177 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       })();
 
-        if ((isLive || isFinal)) {
-          matchCard.addEventListener('click', async () => {
-            const existingOverlay = document.querySelector('.pbp-overlay');
-            if (existingOverlay) existingOverlay.remove();
-  
-            const overlay = document.createElement('div');
-            overlay.className = 'pbp-overlay';
-            overlay.innerHTML = `
-              <div class="pbp-card">
-                <button class="close-pbp" aria-label="Cerrar">✕</button>
-                <div class="tabs">
-                  <button class="tab-btn active" data-tab="pbp">Play-by-Play</button>
-                  <button class="tab-btn" data-tab="stats">Stats</button>
+      if ((isLive || isFinal || isSuspended)) {
+        matchCard.addEventListener('click', async () => {
+          const existingOverlay = document.querySelector('.pbp-overlay');
+          if (existingOverlay) existingOverlay.remove();
+
+          const overlay = document.createElement('div');
+          overlay.className = 'pbp-overlay';
+          overlay.innerHTML = `
+            <div class="pbp-card">
+              <button class="close-pbp" aria-label="Cerrar">✕</button>
+              <div class="tabs">
+                <button class="tab-btn active" data-tab="pbp">Play-by-Play</button>
+                <button class="tab-btn" data-tab="stats">Stats</button>
+              </div>
+              <div class="tab-content tab-pbp">Cargando jugadas...</div>
+              <div class="tab-content tab-stats" style="display:none">Cargando estadísticas...</div>
+            </div>
+          `;
+          document.body.appendChild(overlay);
+
+          overlay.addEventListener('click', e => {
+            if (e.target.classList.contains('close-pbp') || e.target.classList.contains('pbp-overlay')) {
+              overlay.remove();
+            }
+          });
+
+          // Tabs
+          const tabBtns = overlay.querySelectorAll('.tab-btn');
+          tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+              tabBtns.forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              overlay.querySelector('.tab-pbp').style.display = btn.dataset.tab === 'pbp' ? '' : 'none';
+              overlay.querySelector('.tab-stats').style.display = btn.dataset.tab === 'stats' ? '' : 'none';
+            });
+          });
+
+          // PLAY-BY-PLAY TAB
+          if (currentLeague === 'nfl') {
+            try {
+              const playsData = await fetch(`https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${evt.id}/competitions/${evt.id}/plays?limit=300`).then(r => r.json());
+              const plays = playsData.items || [];
+              const highlightWords = [
+                { word: 'two-minute warning', label: '2MW', style: 'color:#fff;background:#1b102f;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #7521f3;' },
+                { word: 'blocked', label: 'BLOCKED', style: 'color:#fff;background:#2f1010;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid#f35d21;' },
+                { word: 'suspended', label: 'SUSPENDED', style: 'color:#fff;background:#2f1010;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f32121;' },
+                { word: 'penalty', label: 'FLAG', style: 'color:#fff;background:#2f2a10;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f3d321;' },
+                { word: 'end game', label: 'FINAL', style: 'color:#fff;background:#10162f;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #EF7C08;' },
+                { word: 'touchdown', label: 'TD', style: 'color:#fff;background:#2f1e10;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f38321;' },
+                { word: 'fumble', label: 'FUM', style: 'color:#222;background:#FFEE5C;padding:0.1em 0.5em;border-radius:6px;font-weight:bold;font-size:.93em;' },
+                { word: 'intercepted', label: 'INT', style: 'color:#fff;background:#C82333;padding:0.1em 0.5em;border-radius:6px;font-weight:bold;font-size:.93em;' },
+                { word: 'timeout #', label: 'TO', style: 'color:#fff;background:#003366;padding:0.1em 0.5em;border-radius:6px;font-size:.91em;' },
+                { word: 'official timeout', label: 'O.TO', style: 'color:#222;background:#d1d5db;padding:0.1em 0.5em;border-radius:6px;font-size:.91em;font-weight:normal;' },
+                { word: 'end quarter', label: 'END Q', style: 'color:#fff;background:#10162f;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #2196f3;' },
+                { word: 'field goal is good', label: 'FG', style: 'color:#fff;background:#13B355;padding:0.1em 0.5em;border-radius:6px;font-size:.93em;font-weight:bold;' },
+                { word: 'field goal is no good', label: 'FG X', style: 'color:#fff;background:#C82333;padding:0.1em 0.5em;border-radius:6px;font-size:.93em;font-weight:bold;' }
+              ];
+              const list = plays.reverse().map(p => {
+                let tag = '';
+                const playText = (p.text || '').toLowerCase();
+                for (let h of highlightWords) {
+                  if (playText.includes(h.word)) {
+                    tag = `<span style="${h.style}">${h.label}</span>`;
+                    break;
+                  }
+                }
+                return `
+                  <li style="margin-bottom:4px;">
+                    <span style="display:inline-block;min-width:44px;color:#2196F3;">${p.clock.displayValue || ''}</span>
+                    ${tag ? tag + ' ' : ''}
+                    <span>${p.text}</span>
+                  </li>`;
+              }).join('');
+              overlay.querySelector('.tab-pbp').innerHTML = `<ul class="pbp-list" style="margin:0;padding:0 0 0 10px;list-style:none;">${list}</ul>`;
+            } catch {
+              overlay.querySelector('.tab-pbp').innerHTML = `<p>Error loading plays.</p>`;
+            }
+          } else {
+            // NCAA: no hay play-by-play (oficial)
+            overlay.querySelector('.tab-pbp').innerHTML = `<p style="padding:32px;text-align:center;">No play-by-play available for college football games.</p>`;
+          }
+
+          // STATS TAB (comparativa centrada)
+          try {
+            const boxscoreUrl = currentLeague === 'nfl'
+              ? `/api/espn-boxscore-cdn?gameId=${evt.id}`
+              : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/boxscore?event=${evt.id}`;
+            const boxRes = await fetch(boxscoreUrl);
+            const boxData = await res.json();
+          } catch(e) {
+            // fallback a la misma variable para mantener lo original
+          }
+          try {
+            const boxscoreUrl = currentLeague === 'nfl'
+              ? `/api/espn-boxscore-cdn?gameId=${evt.id}`
+              : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/boxscore?event=${evt.id}`;
+            const boxRes = await fetch(boxscoreUrl);
+            const boxData = await boxRes.json();
+            const teams = currentLeague === 'nfl'
+              ? boxData.gamepackageJSON?.boxscore?.teams || []
+              : boxData.boxscore?.teams || [];
+            if (teams.length !== 2) throw new Error("No team stats found.");
+
+            // Combina todos los nombres de estadísticas únicas de ambos equipos
+            const allLabels = [
+              ...new Set([
+                ...(teams[0].statistics || []).map(s => s.label),
+                ...(teams[1].statistics || []).map(s => s.label)
+              ])
+            ].filter(Boolean);
+
+            const getStatValue = (team, label) => {
+              const s = (team.statistics || []).find(stat => stat.label === label);
+              return s ? s.displayValue : '-';
+            };
+
+            const awayT = teams[0], homeT = teams[1];
+
+            overlay.querySelector('.tab-stats').innerHTML = `
+              <div class="apple-stats-comparative" style="width:100%;max-width:650px;margin:0 auto;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                  <div style="text-align:center;flex:1;">
+                    <img src="${awayT.team.logo}" alt="${awayT.team.displayName}" style="height:48px;">
+                    <div style="font-size:1em;font-weight:600;">${awayT.team.displayName}</div>
+                  </div>
+                  <div style="flex:0 0 110px;text-align:center;font-size:1.2em;font-weight:600;opacity:.78;">STATS</div>
+                  <div style="text-align:center;flex:1;">
+                    <img src="${homeT.team.logo}" alt="${homeT.team.displayName}" style="height:48px;">
+                    <div style="font-size:1em;font-weight:600;">${homeT.team.displayName}</div>
+                  </div>
                 </div>
-                <div class="tab-content tab-pbp">Cargando jugadas...</div>
-                <div class="tab-content tab-stats" style="display:none">Cargando estadísticas...</div>
+                <table class="apple-comparison-table" style="width:100%;border-collapse:separate;border-spacing:0 4px;">
+                  <tbody>
+                  ${allLabels.map(label => `
+                    <tr>
+                      <td style="text-align:center;width:32%;font-weight:500;">${getStatValue(awayT, label)}</td>
+                      <td style="text-align:center;width:36%;color:#bbb;font-size:.99em;">${label}</td>
+                      <td style="text-align:center;width:32%;font-weight:500;">${getStatValue(homeT, label)}</td>
+                    </tr>
+                  `).join('')}
+                  </tbody>
+                </table>
               </div>
             `;
-            document.body.appendChild(overlay);
-  
-            overlay.addEventListener('click', e => {
-              if (e.target.classList.contains('close-pbp') || e.target.classList.contains('pbp-overlay')) {
-                overlay.remove();
-              }
-            });
-  
-            // Tabs
-            const tabBtns = overlay.querySelectorAll('.tab-btn');
-            tabBtns.forEach(btn => {
-              btn.addEventListener('click', () => {
-                tabBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                overlay.querySelector('.tab-pbp').style.display = btn.dataset.tab === 'pbp' ? '' : 'none';
-                overlay.querySelector('.tab-stats').style.display = btn.dataset.tab === 'stats' ? '' : 'none';
-              });
-            });
-  
-            // PLAY-BY-PLAY TAB
-            if (currentLeague === 'nfl') {
-              try {
-                const playsData = await fetch(`https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${evt.id}/competitions/${evt.id}/plays?limit=300`).then(r => r.json());
-                const plays = playsData.items || [];
-                const highlightWords = [
-                  { word: 'two-minute warning', label: '2MW', style: 'color:#fff;background:#1b102f;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #7521f3;' },
-                  { word: 'blocked', label: 'BLOCKED', style: 'color:#fff;background:#2f1010;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f32121;' },
-                  { word: 'penalty', label: 'FLAG', style: 'color:#fff;background:#2f2a10;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f3d321;' },
-                  { word: 'end game', label: 'FINAL', style: 'color:#fff;background:#10162f;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #EF7C08;' },
-                  { word: 'touchdown', label: 'TD', style: 'color:#fff;background:#2f1e10;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f38321;' },
-                  { word: 'fumble', label: 'FUM', style: 'color:#222;background:#FFEE5C;padding:0.1em 0.5em;border-radius:6px;font-weight:bold;font-size:.93em;' },
-                  { word: 'intercepted', label: 'INT', style: 'color:#fff;background:#C82333;padding:0.1em 0.5em;border-radius:6px;font-weight:bold;font-size:.93em;' },
-                  { word: 'timeout #', label: 'TO', style: 'color:#fff;background:#003366;padding:0.1em 0.5em;border-radius:6px;font-size:.91em;' },
-                  { word: 'official timeout', label: 'O.TO', style: 'color:#222;background:#d1d5db;padding:0.1em 0.5em;border-radius:6px;font-size:.91em;font-weight:normal;' },
-                  { word: 'end quarter', label: 'END Q', style: 'color:#fff;background:#10162f;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #2196f3;' },
-                  { word: 'field goal is good', label: 'FG', style: 'color:#fff;background:#13B355;padding:0.1em 0.5em;border-radius:6px;font-size:.93em;font-weight:bold;' },
-                  { word: 'field goal is no good', label: 'FG X', style: 'color:#fff;background:#C82333;padding:0.1em 0.5em;border-radius:6px;font-size:.93em;font-weight:bold;' }
-                ];
-                const list = plays.reverse().map(p => {
-                  let tag = '';
-                  const playText = (p.text || '').toLowerCase();
-                  for (let h of highlightWords) {
-                    if (playText.includes(h.word)) {
-                      tag = `<span style="${h.style}">${h.label}</span>`;
-                      break;
-                    }
-                  }
-                  return `
-                    <li style="margin-bottom:4px;">
-                      <span style="display:inline-block;min-width:44px;color:#2196F3;">${p.clock.displayValue || ''}</span>
-                      ${tag ? tag + ' ' : ''}
-                      <span>${p.text}</span>
-                    </li>`;
-                }).join('');
-                overlay.querySelector('.tab-pbp').innerHTML = `<ul class="pbp-list" style="margin:0;padding:0 0 0 10px;list-style:none;">${list}</ul>`;
-              } catch {
-                overlay.querySelector('.tab-pbp').innerHTML = `<p>Error loading plays.</p>`;
-              }
-            } else {
-              // NCAA: no hay play-by-play (oficial)
-              overlay.querySelector('.tab-pbp').innerHTML = `<p style="padding:32px;text-align:center;">No play-by-play available for college football games.</p>`;
-            }
-  
-// STATS TAB (Apple Sports style, centrado, sin barras)
-// STATS TAB (Comparative style)
-try {
-  const boxscoreUrl = currentLeague === 'nfl'
-    ? `/api/espn-boxscore-cdn?gameId=${evt.id}`
-    : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/boxscore?event=${evt.id}`;
-  const boxRes = await fetch(boxscoreUrl);
-  const boxData = await boxRes.json();
-  const teams = currentLeague === 'nfl'
-    ? boxData.gamepackageJSON?.boxscore?.teams || []
-    : boxData.boxscore?.teams || [];
-  if (teams.length !== 2) throw new Error("No team stats found.");
-
-  // Combina todos los nombres de estadísticas únicas de ambos equipos
-  const allLabels = [
-    ...new Set([
-      ...(teams[0].statistics || []).map(s => s.label),
-      ...(teams[1].statistics || []).map(s => s.label)
-    ])
-  ].filter(Boolean);
-
-  const getStatValue = (team, label) => {
-    const s = (team.statistics || []).find(stat => stat.label === label);
-    return s ? s.displayValue : '-';
-  };
-
-  const away = teams[0], home = teams[1];
-
-  overlay.querySelector('.tab-stats').innerHTML = `
-    <div class="apple-stats-comparative" style="width:100%;max-width:650px;margin:0 auto;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <div style="text-align:center;flex:1;">
-          <img src="${away.team.logo}" alt="${away.team.displayName}" style="height:48px;">
-          <div style="font-size:1em;font-weight:600;">${away.team.displayName}</div>
-        </div>
-        <div style="flex:0 0 110px;text-align:center;font-size:1.2em;font-weight:600;opacity:.78;">STATS</div>
-        <div style="text-align:center;flex:1;">
-          <img src="${home.team.logo}" alt="${home.team.displayName}" style="height:48px;">
-          <div style="font-size:1em;font-weight:600;">${home.team.displayName}</div>
-        </div>
-      </div>
-      <table class="apple-comparison-table" style="width:100%;border-collapse:separate;border-spacing:0 4px;">
-        <tbody>
-        ${allLabels.map(label => `
-          <tr>
-            <td style="text-align:center;width:32%;font-weight:500;">${getStatValue(away, label)}</td>
-            <td style="text-align:center;width:36%;color:#bbb;font-size:.99em;">${label}</td>
-            <td style="text-align:center;width:32%;font-weight:500;">${getStatValue(home, label)}</td>
-          </tr>
-        `).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
-} catch (err) {
-  overlay.querySelector('.tab-stats').innerHTML = `
-    <div style="padding:24px;text-align:center;">
-      <b>No stats available.</b>
-      <br><small>${err.message}</small>
-    </div>`;
-}
-          });
-        }
-  
-        matchesContainer.appendChild(matchCard);
-        
-        if (isLive) {
-          matchCard.setAttribute('data-id', evt.id);
-          // Evita múltiples intervalos para el mismo partido
-          if (liveIntervals[evt.id]) clearInterval(liveIntervals[evt.id]);
-          liveIntervals[evt.id] = setInterval(() => {
-            updateLiveGameCard(evt.id, matchCard, currentLeague);
-          }, 20000);
-          updateLiveGameCard(evt.id, matchCard, currentLeague);
-        } else {
-          // Si el partido ya no está en vivo, limpia el intervalo
-          if (liveIntervals[evt.id]) {
-            clearInterval(liveIntervals[evt.id]);
-            delete liveIntervals[evt.id];
+          } catch (err) {
+            overlay.querySelector('.tab-stats').innerHTML = `
+              <div style="padding:24px;text-align:center;">
+                <b>No stats available.</b>
+                <br><small>${err.message}</small>
+              </div>`;
           }
-        }
-      });
-    }
+        });
+      }
 
-    
+      matchesContainer.appendChild(matchCard);
+
+      if (isLive) {
+        matchCard.setAttribute('data-id', evt.id);
+        if (liveIntervals[evt.id]) clearInterval(liveIntervals[evt.id]);
+        liveIntervals[evt.id] = setInterval(() => {
+          updateLiveGameCard(evt.id, matchCard, currentLeague);
+        }, 20000);
+        updateLiveGameCard(evt.id, matchCard, currentLeague);
+      } else {
+        if (liveIntervals[evt.id]) {
+          clearInterval(liveIntervals[evt.id]);
+          delete liveIntervals[evt.id];
+        }
+      }
+    });
+  }
 
   function updateWeekFilterForSeasonType() {
     const weekFilter = document.getElementById('weekFilter');
@@ -427,7 +447,6 @@ try {
           <option value="all">All Weeks</option>
         `;
       } else if (currentSeasonType === '3') {
-        // Los bowls tienen week 1,2,3... pero en la práctica ESPN te los pone como week=1,2,3
         weekFilter.innerHTML = `
           <option value="1">Bowls</option>
         `;
@@ -497,7 +516,6 @@ try {
     });
   });
 
-  
   initDefaultWeekAndRender();
   setInterval(() => {
     const scrollY = window.scrollY;
@@ -528,6 +546,13 @@ function updateLiveGameCard(gameId, card, league) {
       if (!comp) return;
       const status = comp.status || {};
       const isLive = status.type?.state === 'in';
+
+      const isSuspended =
+        suspendedGames.has(String(gameId)) ||
+        (status?.type?.name === 'STATUS_SUSPENDED') ||
+        /suspend/i.test(status?.type?.description || '') ||
+        /suspend/i.test(status?.type?.detail || '');
+
       // Update time display
       let timeDisplay = '';
       if (isLive && status.period && status.displayClock) {
@@ -540,6 +565,7 @@ function updateLiveGameCard(gameId, card, league) {
       }
       const matchTime = card.querySelector('.match-time');
       if (matchTime) matchTime.textContent = timeDisplay;
+
       // Update scores
       const home = comp.competitors.find(c => c.homeAway === 'home');
       const away = comp.competitors.find(c => c.homeAway === 'away');
@@ -548,30 +574,28 @@ function updateLiveGameCard(gameId, card, league) {
         scoreSpans[0].textContent = away?.score ?? '0';
         scoreSpans[1].textContent = home?.score ?? '0';
       }
+
       // Update badge
       const matchHeader = card.querySelector('.match-header');
       if (matchHeader) {
         let badge = '';
-        if (isLive) badge = '<div class="live-badge">LIVE</div>';
+        if (isSuspended) badge = '<div class="suspended-badge">SUSPENDED</div>';
+        else if (isLive) badge = '<div class="live-badge">LIVE</div>';
         else if (status.type?.state === 'post') badge = '<div class="final-badge">FINAL</div>';
         matchHeader.innerHTML = `${badge}<span class="match-time">${timeDisplay}</span>`;
       }
-      // Winner/Tie final highlight (live updates)
-      const teamEls = card.querySelectorAll('.team');
-      const awayEl = teamEls[0];
-      const homeEl = teamEls[1];
-      [awayEl, homeEl].forEach(el => el && el.classList.remove('winner-final','tie-final'));
-      if (status.type?.state === 'post' && awayEl && homeEl) {
-        const aScore = Number(away?.score ?? 0);
-        const hScore = Number(home?.score ?? 0);
-        if (aScore > hScore) {
-          awayEl.classList.add('winner-final');
-        } else if (hScore > aScore) {
-          homeEl.classList.add('winner-final');
-        } else {
-          awayEl.classList.add('tie-final');
-          homeEl.classList.add('tie-final');
+
+      // Reflect suspended state on the card and stop polling if suspended
+      if (isSuspended) {
+        card.classList.add('suspended');
+        card.classList.remove('live');
+        if (liveIntervals[gameId]) {
+          clearInterval(liveIntervals[gameId]);
+          delete liveIntervals[gameId];
         }
+      } else if (status.type?.state === 'post') {
+        // final: permitir que se aplique highlight de ganador desde render si vuelves a pintar
+        card.classList.remove('live');
       }
     } catch (e) {
       // Ignore update errors
