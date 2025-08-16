@@ -5,7 +5,7 @@
     --text-light: #FFFFFF;
     --card-bg: #1A1A1A;
   }
-  
+
   * {
     margin: 0;
     padding: 0;
@@ -20,6 +20,45 @@
     display: flex;
     flex-direction: column;
   }
+
+  
+
+.section-title {
+  background: linear-gradient(45deg,rgba(255, 152, 56, 1) 0%, rgba(255, 152, 56, 1) 38%, rgba(132, 219, 103, 1) 75%);
+  -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Lacquer', cursive;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+}
+
+
+.league-toggle {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.toggle-btn {
+  padding: 0.8rem 2rem;
+  border: none;
+  border-radius: 25px;
+  background: var(--card-bg);
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.toggle-btn.active {
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  font-weight: 500;
+}
+
+
   
   .navbar {
     display: flex;
@@ -111,36 +150,6 @@
   .hero-subtitle {
     font-size: 1.5rem;
     color: var(--secondary-color);
-  }
-  
-  .league-toggle {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin: 1rem 0 2rem;
-    flex-wrap: wrap;
-  }
-  
-  .toggle-btn {
-    padding: 0.5rem 2rem;
-    border: none;
-    border-radius: 5px;
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 120px;
-    text-align: center;
-  }
-  
-  .toggle-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
-  
-  .toggle-btn.active {
-    background: #ff6b6b;
   }
   
   .main-content {

@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchInput = document.getElementById('searchInput');
   const weekFilter = document.getElementById('weekFilter');
   const seasonTypeFilter = document.getElementById('seasonTypeFilter');
+  
 
   let currentLeague = 'nfl'; // DEFAULT: NFL
   let currentSeasonType = '1';
@@ -39,13 +40,60 @@ document.addEventListener('DOMContentLoaded', () => {
   // Helper to get current week number from ESPN API for a league/seasonType
   async function getCurrentWeekNumber(league = currentLeague, seasonType = currentSeasonType) {
     try {
-      const url = buildScoreboardBaseUrl(league, seasonType); // no week -> current
+      const url = buildScoreboardBaseUrl(league, seasonType); // no week -> get calendar for that seasonType
       const res = await fetch(url);
       const data = await res.json();
-      // ESPN usually returns a top-level week object
+
+      // Try to resolve using the season calendar (most reliable)
+      const now = new Date();
+      const calRoot = data?.leagues?.[0]?.calendar;
+
+      const findTypeNode = (cal, st) => {
+        if (!Array.isArray(cal)) return null;
+        // ESPN exposes season type nodes with either value "1/2/3" or label like "Regular Season"
+        const stStr = String(st);
+        const lblNeedle =
+          stStr === "1" ? "pre" :
+          stStr === "2" ? "regular" :
+          stStr === "3" ? "post" : "";
+
+        return cal.find(node =>
+          String(node?.value) === stStr ||
+          (typeof node?.label === "string" && node.label.toLowerCase().includes(lblNeedle))
+        );
+      };
+
+      const typeNode = findTypeNode(calRoot, seasonType);
+      const weeks = typeNode?.entries || typeNode?.calendar || [];
+
+      if (Array.isArray(weeks) && weeks.length) {
+        // 1) If now falls inside one of the week windows, use that
+        const byWindow = weeks.find(w => {
+          const sd = w?.startDate ? new Date(w.startDate) : null;
+          const ed = w?.endDate ? new Date(w.endDate) : null;
+          return sd && ed && now >= sd && now <= ed;
+        });
+        if (byWindow) {
+          return String(byWindow.value ?? byWindow.weekNumber ?? byWindow.number ?? "");
+        }
+
+        // 2) If we are BEFORE the first week window, clamp to first week
+        const first = weeks[0];
+        if (first?.startDate && now < new Date(first.startDate)) {
+          return String(first.value ?? first.weekNumber ?? first.number ?? "1");
+        }
+
+        // 3) If AFTER last week, clamp to last week
+        const last = weeks[weeks.length - 1];
+        if (last) {
+          return String(last.value ?? last.weekNumber ?? last.number ?? String(weeks.length));
+        }
+      }
+
+      // Fallbacks: some responses include top-level week or event week
       const wk = data?.week?.number || data?.leagues?.[0]?.calendar?.current?.week?.number;
       if (wk && Number.isFinite(Number(wk))) return String(wk);
-      // fallback: if events exist, try to read from first event
+
       const evtWeek = data?.events?.[0]?.week?.number;
       return evtWeek ? String(evtWeek) : null;
     } catch (e) {
