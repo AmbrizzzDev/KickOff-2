@@ -489,8 +489,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Button handlers
   controls.querySelectorAll('.view-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      const prev = currentView;
       currentView = btn.dataset.view;
-      if (currentView !== 'division') divisionConfFilter = 'ALL';
+
+      if (currentView === 'division') {
+        // Always default to AFC when entering Division view
+        divisionConfFilter = 'AFC';
+      } else {
+        // Hide/neutralize conference sub-filter outside Division
+        divisionConfFilter = 'ALL';
+      }
+
       renderStandings();
     });
   });
