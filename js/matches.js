@@ -6,6 +6,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchInput = document.getElementById('searchInput');
   const weekFilter = document.getElementById('weekFilter');
   const seasonTypeFilter = document.getElementById('seasonTypeFilter');
+
+  // --- Local team assets (logos/names) map (shared with standings)
+  let TEAM_MAP = null;
+  async function loadTeamMap() {
+    if (TEAM_MAP) return TEAM_MAP;
+    try {
+      const res = await fetch('/data/teams/nfl_teams.json', { cache: 'force-cache' });
+      if (!res.ok) throw new Error('nfl_teams.json not found');
+      TEAM_MAP = await res.json();
+    } catch (e) {
+      console.warn('TEAM_MAP not available for matches:', e.message);
+      TEAM_MAP = {};
+    }
+    return TEAM_MAP;
+  }
+  function teamKeyFromRaw(t) {
+    if (!t) return '';
+    return String(t.abbreviation || t.shortDisplayName || t.displayName || t.name || '').toUpperCase();
+  }
+  function getTeamLogoRaw(t) {
+    const key = teamKeyFromRaw(t);
+    const local = TEAM_MAP && TEAM_MAP[key];
+    return (local && local.logo) || t?.logo || t?.logos?.[0]?.href || '';
+  }
+  function getTeamNameRaw(t) {
+    const key = teamKeyFromRaw(t);
+    const local = TEAM_MAP && TEAM_MAP[key];
+    return (local?.displayName) || t?.displayName || t?.shortDisplayName || t?.name || key || 'TBD';
+  }
   
 
   let currentLeague = 'nfl'; // DEFAULT: NFL
@@ -194,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     matchesContainer.innerHTML = '';
     const selectedWeek = weekFilter.value;
     let allGames = [];
+    await loadTeamMap();
 
     try {
       if (selectedWeek === 'all' && currentSeasonType !== '1' && currentLeague === 'nfl') {
@@ -270,14 +300,14 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="teams-container">
           <div class="team">
-            <img src="${away?.team?.logo || ''}" class="team-logo">
-            <span class="team-name">${away?.team?.displayName || 'TBD'}</span>
+            <img src="${getTeamLogoRaw(away?.team)}" class="team-logo">
+            <span class="team-name">${getTeamNameRaw(away?.team)}</span>
             ${(isLive || isFinal || isSuspended) ? `<span class="score">${away?.score ?? '0'}</span>` : ''}
           </div>
           <span class="vs-text">VS</span>
           <div class="team">
-            <img src="${home?.team?.logo || ''}" class="team-logo">
-            <span class="team-name">${home?.team?.displayName || 'TBD'}</span>
+            <img src="${getTeamLogoRaw(home?.team)}" class="team-logo">
+            <span class="team-name">${getTeamNameRaw(home?.team)}</span>
             ${(isLive || isFinal || isSuspended) ? `<span class="score">${home?.score ?? '0'}</span>` : ''}
           </div>
         </div>
@@ -395,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // STATS TAB (comparativa centrada)
           try {
             const boxscoreUrl = currentLeague === 'nfl'
-              ? `/api/espn-boxscore-cdn?gameId=${evt.id}`
+              ? `/data/api/espn-boxscore-cdn?gameId=${evt.id}`
               : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/boxscore?event=${evt.id}`;
             const boxRes = await fetch(boxscoreUrl);
             const boxData = await boxRes.json();
@@ -423,13 +453,13 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="apple-stats-comparative" style="width:100%;max-width:650px;margin:0 auto;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                   <div style="text-align:center;flex:1;">
-                    <img src="${awayT.team.logo}" alt="${awayT.team.displayName}" style="height:48px;">
-                    <div style="font-size:1em;font-weight:600;">${awayT.team.displayName}</div>
+                    <img src="${getTeamLogoRaw(awayT.team)}" alt="${awayT.team.displayName}" style="height:48px;">
+                    <div style="font-size:1em;font-weight:600;">${getTeamNameRaw(awayT.team)}</div>
                   </div>
                   <div style="flex:0 0 110px;text-align:center;font-size:1.2em;font-weight:600;opacity:.78;">STATS</div>
                   <div style="text-align:center;flex:1;">
-                    <img src="${homeT.team.logo}" alt="${homeT.team.displayName}" style="height:48px;">
-                    <div style="font-size:1em;font-weight:600;">${homeT.team.displayName}</div>
+                    <img src="${getTeamLogoRaw(homeT.team)}" alt="${homeT.team.displayName}" style="height:48px;">
+                    <div style="font-size:1em;font-weight:600;">${getTeamNameRaw(homeT.team)}</div>
                   </div>
                 </div>
                 <table class="apple-comparison-table" style="width:100%;border-collapse:separate;border-spacing:0 4px;">

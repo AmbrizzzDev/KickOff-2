@@ -21,6 +21,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const standingsGrid = document.getElementById('standingsGrid');
 
+  // --- Local team assets (logos/names) map
+  let TEAM_MAP = null;
+  async function loadTeamMap() {
+    if (TEAM_MAP) return TEAM_MAP;
+    try {
+      const res = await fetch('/data/teams/nfl_teams.json', { cache: 'force-cache' });
+      if (!res.ok) throw new Error('nfl_teams.json not found');
+      TEAM_MAP = await res.json();
+    } catch (e) {
+      console.warn('TEAM_MAP not available:', e.message);
+      TEAM_MAP = {};
+    }
+    return TEAM_MAP;
+  }
+  function teamKeyFrom(team) {
+    return String(team?.abbreviation || team?.shortDisplayName || team?.displayName || '').toUpperCase();
+  }
+  function getTeamLogo(team) {
+    const key = teamKeyFrom(team);
+    const local = TEAM_MAP && TEAM_MAP[key];
+    return (local && local.logo) || team?.logos?.[0]?.href || team?.logo || '';
+  }
+
   // --- Performance helpers
 const raf = (fn) => requestAnimationFrame(fn);
 
@@ -48,8 +71,10 @@ function attachDragScroll(scrollHost) {
 
 // Dos etiquetas (full + abbr) envueltas en un chip responsivo
 function teamLabelsHTML(team) {
-  const full = team.displayName || team.shortDisplayName || team.abbreviation || '';
-  const abbr = team.abbreviation || team.shortDisplayName || full;
+  const key = teamKeyFrom(team);
+  const local = TEAM_MAP && TEAM_MAP[key];
+  const full = (local?.displayName) || team.displayName || team.shortDisplayName || team.abbreviation || '';
+  const abbr = (local?.abbr) || team.abbreviation || team.shortDisplayName || full;
   return `
     <span class="team-chip">
       <span class="team-name-full">${full}</span>
@@ -277,6 +302,7 @@ function applyAbbrThreshold(card){
 
   async function renderStandings() {
     updateControlsUI();
+    await loadTeamMap();
     const placeholder = document.createElement('div');
     placeholder.className = 'loading';
     placeholder.textContent = 'Loading standings...';
@@ -431,7 +457,7 @@ function applyAbbrThreshold(card){
         <div class="team-row" style="${rowStyle}">
           <span class="col-rank rank">${idx + 1}</span>
           <span class="col-team team-sticky">
-            <img src="${team.logos?.[0]?.href || team.logo || ''}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
+            <img src="${getTeamLogo(team)}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
             ${teamLabelsHTML(team)}
           </span>
           <span class="col-w num">${fmtInt(w)}</span>
@@ -514,7 +540,7 @@ function applyAbbrThreshold(card){
           <div class="team-row" style="${rowStyle}">
             <span class="col-rank rank">${idx + 1}</span>
             <span class="col-team team-sticky">
-              <img src="${team.logos?.[0]?.href || team.logo || ''}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
+              <img src="${getTeamLogo(team)}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
               ${teamLabelsHTML(team)}
             </span>
             <span class="col-w num">${fmtInt(w)}</span>
@@ -630,7 +656,7 @@ function applyAbbrThreshold(card){
         <div class="team-row" style="${rowStyle}">
           <span class="col-rank rank">${idx + 1}</span>
           <span class="col-team team-sticky">
-            <img src="${team.logos?.[0]?.href || team.logo || ''}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
+            <img src="${getTeamLogo(team)}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
             ${teamLabelsHTML(team)}
           </span>
           <span class="col-w num">${fmtInt(w)}</span>

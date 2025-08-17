@@ -1,0 +1,194 @@
+{
+  "ARI": {
+    "displayName": "Arizona Cardinals",
+    "abbr": "ARI",
+    "logo": "/data/teams/logos/ari.png",
+    "color": "#a40227"
+  },
+  "ATL": {
+    "displayName": "Atlanta Falcons",
+    "abbr": "ATL",
+    "logo": "/data/teams/logos/atl.png",
+    "color": "#a71930"
+  },
+  "BAL": {
+    "displayName": "Baltimore Ravens",
+    "abbr": "BAL",
+    "logo": "/data/teams/logos/bal.png",
+    "color": "#29126f"
+  },
+  "BUF": {
+    "displayName": "Buffalo Bills",
+    "abbr": "BUF",
+    "logo": "/data/teams/logos/buf.png",
+    "color": "#00338d"
+  },
+  "CAR": {
+    "displayName": "Carolina Panthers",
+    "abbr": "CAR",
+    "logo": "/data/teams/logos/car.png",
+    "color": "#0085ca"
+  },
+  "CHI": {
+    "displayName": "Chicago Bears",
+    "abbr": "CHI",
+    "logo": "/data/teams/logos/chi.png",
+    "color": "#0b1c3a"
+  },
+  "CIN": {
+    "displayName": "Cincinnati Bengals",
+    "abbr": "CIN",
+    "logo": "/data/teams/logos/cin.png",
+    "color": "#fb4f14"
+  },
+  "CLE": {
+    "displayName": "Cleveland Browns",
+    "abbr": "CLE",
+    "logo": "/data/teams/logos/cle.png",
+    "color": "#472a08"
+  },
+  "DAL": {
+    "displayName": "Dallas Cowboys",
+    "abbr": "DAL",
+    "logo": "/data/teams/logos/dal.png",
+    "color": "#002a5c"
+  },
+  "DEN": {
+    "displayName": "Denver Broncos",
+    "abbr": "DEN",
+    "logo": "/data/teams/logos/den.png",
+    "color": "#0a2343"
+  },
+  "DET": {
+    "displayName": "Detroit Lions",
+    "abbr": "DET",
+    "logo": "/data/teams/logos/det.png",
+    "color": "#0076b6"
+  },
+  "GB": {
+    "displayName": "Green Bay Packers",
+    "abbr": "GB",
+    "logo": "/data/teams/logos/gb.png",
+    "color": "#204e32"
+  },
+  "HOU": {
+    "displayName": "Houston Texans",
+    "abbr": "HOU",
+    "logo": "/data/teams/logos/hou.png",
+    "color": "#00143f"
+  },
+  "IND": {
+    "displayName": "Indianapolis Colts",
+    "abbr": "IND",
+    "logo": "/data/teams/logos/ind.png",
+    "color": "#003b75"
+  },
+  "JAX": {
+    "displayName": "Jacksonville Jaguars",
+    "abbr": "JAX",
+    "logo": "/data/teams/logos/jax.png",
+    "color": "#007487"
+  },
+  "KC": {
+    "displayName": "Kansas City Chiefs",
+    "abbr": "KC",
+    "logo": "/data/teams/logos/kc.png",
+    "color": "#e31837"
+  },
+  "LAC": {
+    "displayName": "Los Angeles Chargers",
+    "abbr": "LAC",
+    "logo": "/data/teams/logos/lac.png",
+    "color": "#0080c6"
+  },
+  "LAR": {
+    "displayName": "Los Angeles Rams",
+    "abbr": "LAR",
+    "logo": "/data/teams/logos/lar.png",
+    "color": "#003594"
+  },
+  "LV": {
+    "displayName": "Las Vegas Raiders",
+    "abbr": "LV",
+    "logo": "/data/teams/logos/lv.png",
+    "color": "#000000"
+  },
+  "MIA": {
+    "displayName": "Miami Dolphins",
+    "abbr": "MIA",
+    "logo": "/data/teams/logos/mia.png",
+    "color": "#008e97"
+  },
+  "MIN": {
+    "displayName": "Minnesota Vikings",
+    "abbr": "MIN",
+    "logo": "/data/teams/logos/min.png",
+    "color": "#4f2683"
+  },
+  "NE": {
+    "displayName": "New England Patriots",
+    "abbr": "NE",
+    "logo": "/data/teams/logos/ne.png",
+    "color": "#002a5c"
+  },
+  "NO": {
+    "displayName": "New Orleans Saints",
+    "abbr": "NO",
+    "logo": "/data/teams/logos/no.png",
+    "color": "#d3bc8d"
+  },
+  "NYG": {
+    "displayName": "New York Giants",
+    "abbr": "NYG",
+    "logo": "/data/teams/logos/nyg.png",
+    "color": "#003c7f"
+  },
+  "NYJ": {
+    "displayName": "New York Jets",
+    "abbr": "NYJ",
+    "logo": "/data/teams/logos/nyj.png",
+    "color": "#115740"
+  },
+  "PHI": {
+    "displayName": "Philadelphia Eagles",
+    "abbr": "PHI",
+    "logo": "/data/teams/logos/phi.png",
+    "color": "#06424d"
+  },
+  "PIT": {
+    "displayName": "Pittsburgh Steelers",
+    "abbr": "PIT",
+    "logo": "/data/teams/logos/pit.png",
+    "color": "#000000"
+  },
+  "SEA": {
+    "displayName": "Seattle Seahawks",
+    "abbr": "SEA",
+    "logo": "/data/teams/logos/sea.png",
+    "color": "#002a5c"
+  },
+  "SF": {
+    "displayName": "San Francisco 49ers",
+    "abbr": "SF",
+    "logo": "/data/teams/logos/sf.png",
+    "color": "#aa0000"
+  },
+  "TB": {
+    "displayName": "Tampa Bay Buccaneers",
+    "abbr": "TB",
+    "logo": "/data/teams/logos/tb.png",
+    "color": "#bd1c36"
+  },
+  "TEN": {
+    "displayName": "Tennessee Titans",
+    "abbr": "TEN",
+    "logo": "/data/teams/logos/ten.png",
+    "color": "#4b92db"
+  },
+  "WSH": {
+    "displayName": "Washington Commanders",
+    "abbr": "WSH",
+    "logo": "/data/teams/logos/wsh.png",
+    "color": "#5a1414"
+  }
+}
