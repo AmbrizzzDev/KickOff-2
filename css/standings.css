@@ -4,16 +4,6 @@
   margin: 0 auto;
 }
 
-.section-title {
-  color: var(--primary-color);
-  font-family: 'Lacquer', cursive;
-  text-align: center;
-  margin: 0 0 1.5rem;
-  font-size: clamp(2rem, 3vw, 2.6rem);
-  letter-spacing: .5px;
-  text-shadow: 0 0 22px color-mix(in oklab, var(--primary-color) 35%, transparent);
-}
-
 /* ===== Controls (Division / Conference / League) ===== */
 .standings-controls {
   display: flex;
