@@ -1,6 +1,6 @@
 .standings-container {
   padding: 2rem min(5vw, 48px);
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
 }
 
@@ -237,7 +237,7 @@
   left: 0;
   z-index: 2;
   min-width: 140px; /* logo + ABBR */
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(1px);
   display: flex;
   align-items: center;
   gap: .55rem;
@@ -360,4 +360,146 @@
     display: grid;
     grid-template-columns: 1fr; /* una sola columna */
     gap: 22px; /* espacio entre cards */
+}
+
+/* muestra nombre completo en desktop y solo abreviación en móvil */
+.team-name-full { display: inline; }
+.team-name-abbr { display: none; }
+@media (max-width: 900px) {
+  .team-name-full { display: none; }
+  .team-name-abbr { display: inline; }
+
+  /* ...pero en League/Division mostramos full name */
+  #standingsGrid.league-view .team-name-full,
+  #standingsGrid.division-view .team-name-full { display: inline-block; }
+  #standingsGrid.league-view .team-name-abbr,
+  #standingsGrid.division-view .team-name-abbr { display: none; }
+}
+
+/* el área scrolleable de la tabla */
+.standings-group .standings-content {
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* suaviza el arrastre horizontal */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* filas y encabezados: grid consistente y ancho mínimo para no colapsar */
+.standings-group .standings-header,
+.standings-group .team-row {
+  display: grid;
+  grid-template-columns: var(--gridCols);
+  column-gap: 12px;
+  align-items: center;
+  min-width: 1200px;           /* <- clave para que no se amontone */
+}
+
+/* que los spans no “rompan” el grid */
+.standings-group .standings-header > span,
+.standings-group .team-row > span {
+  min-width: 0;           /* permite ellipsis dentro de la celda */
+}
+
+/* bloque team (logo + texto) ordenado y sin desbordes */
+/* Hace que la celda del equipo no se expanda de más y recorte con puntos si falta espacio */
+.team-sticky {
+  min-width: 120px;      /* evita que el logo + abrev se aplaste de más */
+  max-width: 220px;      /* tope para que no se coma la fila completa */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+/* logo con tamaño fijo para que no invada otras celdas */
+.team-logo-sm {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex: 0 0 22px;
+}
+
+/* números centrados y sin superposición */
+.team-row .num,
+.standings-header span {
+  text-align: center;
+}
+
+/* columnas pegajosas (# y Team) para que no “pisen” al hacer scroll-x */
+.rank {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+}
+
+/* Team va después del #; alinea con padding si usas bordes/redondeo */
+.team-sticky {
+  position: sticky;
+  left: 56px;                 /* coincide con la 1ª columna (#) */
+  z-index: 2;
+  padding-right: 8px;         /* separa del resto para que no se “pegue” */
+}
+
+/* evita que el título/gradiente se corte: que el bloque cubra todo el ancho scrolleable */
+.standings-group-title {
+  position: sticky;  /* se queda arriba al scrollear */
+  top: 0;
+  z-index: 4;
+}
+.standings-group .standings-content > .standings-header::before {
+  content: none;  /* por si tenías alguna pseudo-línea previa */
+}
+
+
+.team-row > .rank,
+.standings-header > span:first-child {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  opacity: .85;
+}
+
+/* Por defecto: nombre completo visible, abreviación oculta */
+.team-name-full { display: inline; }
+.team-name-abbr { display: none; }
+
+/* Mobile: usar abreviación + compactar spacing/tipografías */
+@media (max-width: 640px) {
+  .team-name-full { display: none; }
+  .team-name-abbr { display: inline; }
+
+  .standings-group .standings-header,
+  .standings-group .team-row {
+    column-gap: 8px;          /* menos espacio entre columnas */
+  }
+
+  .standings-group .team-row > span,
+  .standings-group .standings-header > span {
+    font-size: 12px;          /* tipografía más chica */
+    line-height: 1.2;
+  }
+
+  .standings-group .team-logo-sm {
+    width: 18px; height: 18px;
+    margin-right: 6px;
+  }
+
+  .standings-group .rank {
+    min-width: 36px;
+  }
+
+  /* Asegura que la última columna no quede tapada por la barra de scroll */
+  .standings-group .standings-content {
+    scrollbar-gutter: stable both-edges;
+    padding-bottom: 6px;
+  }
+}
+
+.team-name-full { display: inline; }
+.team-name-abbr { display: none; }
+
+@media (max-width: 1024px) {
+  .team-name-full { display: none !important; }
+  .team-name-abbr { display: inline !important; }
 }

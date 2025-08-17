@@ -21,22 +21,69 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const standingsGrid = document.getElementById('standingsGrid');
 
-  // Responsive helpers for team label
-  const isDesktop = () => window.matchMedia('(min-width: 1400px)').matches;
-  const teamLabel = (team) => {
-    const full = team.displayName || team.shortDisplayName || team.abbreviation || '';
-    const abbr = team.abbreviation || team.shortDisplayName || full;
-    if ((currentView === 'division' || currentView === 'league') && isDesktop()) {
-      return { text: full, cls: 'team-name' };
-    }
-    return { text: abbr, cls: 'team-abbr' };
-  };
+  // --- Performance helpers
+const raf = (fn) => requestAnimationFrame(fn);
+
+// Drag vertical/horizontal solo en el contenedor scrolleable
+function attachDragScroll(scrollHost) {
+  if (!scrollHost || scrollHost.__dragBound) return;
+  let isDown = false, startX = 0, scrollLeft = 0;
+  scrollHost.addEventListener('pointerdown', e => {
+    isDown = true;
+    startX = e.pageX - scrollHost.offsetLeft;
+    scrollLeft = scrollHost.scrollLeft;
+    scrollHost.style.cursor = 'grabbing';
+    scrollHost.setPointerCapture(e.pointerId);
+  });
+  scrollHost.addEventListener('pointermove', e => {
+    if (!isDown) return;
+    const x = e.pageX - scrollHost.offsetLeft;
+    scrollHost.scrollLeft = scrollLeft - (x - startX);
+  });
+  ['pointerup','pointerleave'].forEach(t =>
+    scrollHost.addEventListener(t, () => { isDown = false; scrollHost.style.cursor = 'default'; })
+  );
+  scrollHost.__dragBound = true;
+}
+
+// Dos etiquetas (full + abbr) envueltas en un chip responsivo
+function teamLabelsHTML(team) {
+  const full = team.displayName || team.shortDisplayName || team.abbreviation || '';
+  const abbr = team.abbreviation || team.shortDisplayName || full;
+  return `
+    <span class="team-chip">
+      <span class="team-name-full">${full}</span>
+      <span class="team-name-abbr">${abbr}</span>
+    </span>
+  `;
+}
+
 
   // Grid template for all columns (Team | W | L | T | PCT | HOME | AWAY | DIV | CONF | PF | PA | DIFF | STRK)
-  const GRID_FULL = '1.6fr 36px 36px 36px 64px 86px 86px 72px 72px 64px 64px 64px 64px';
+// ancho cómodo para que no se pisen; el contenedor hará scroll-x
+// Grid (desktop) — TEAM menos ancho
+const GRID_FULL =
+  '56px minmax(140px,1.2fr) 48px 48px 48px 64px 84px 84px 84px 84px 64px 64px 68px 68px';
 
-  // --- Slider under horizontal scroll (optional visual)
-  function attachHorizontalSlider(card) {
+// Grid (mobile/tablet) — TEAM aún más compacto
+const GRID_MOBILE =
+  '36px minmax(72px,0.9fr) 42px 42px 42px 56px 64px 64px 64px 64px 56px 56px 60px 60px';
+
+// Aplica el grid según el viewport (y actualiza en resize)
+function attachResponsiveColumns(card) {
+  const apply = () => {
+    const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+    card.style.setProperty('--gridCols', isMobile ? GRID_MOBILE : GRID_FULL);
+  };
+  apply();
+  if (!card.__resizeBound) {
+    window.addEventListener('resize', apply, { passive: true });
+    card.__resizeBound = true;
+  }
+}
+
+// --- Slider under horizontal scroll (optional visual)
+function attachHorizontalSlider(card) {
     if (card.querySelector('.hslider')) return;
     const scrollHost = card;
     const bar = document.createElement('div');
@@ -65,12 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Always use full grid; rely on horizontal scroll (no auto-hiding here)
   function attachResponsiveColumns(card) {
-    const apply = () => {
-      card.style.setProperty('--gridCols', GRID_FULL);
-    };
-    const ro = new ResizeObserver(apply);
-    ro.observe(card);
-    apply();
+    card.style.setProperty('--gridCols', GRID_FULL);
   }
 
   // Controls (view + AFC/NFC filter)
@@ -108,6 +150,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
       standingsGrid.classList.remove('single-col');
     }
+
+    standingsGrid.classList.remove('league-view','conference-view','division-view');
+    standingsGrid.classList.add(currentView + '-view');
   }
   
 
@@ -126,11 +171,118 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+// --- Mobile compact for team cell (logo + gap + tipografía)
+(function ensureStandingsMobileCompact() {
+  if (document.getElementById('standings-mobile-compact')) return;
+  const s = document.createElement('style');
+  s.id = 'standings-mobile-compact';
+  s.textContent = `
+  @media (max-width: 768px){
+    .standings-content .team-sticky{
+      gap: 6px !important;
+    }
+    .standings-content .team-logo-sm{
+      width: 18px !important;
+      height: 18px !important;
+    }
+    /* muestra abreviación, oculta nombre largo en móvil */
+    .standings-content .team-name-full{ display: none !important; }
+    .standings-content .team-name-abbr{
+      display: inline !important;
+      font-size: .92rem !important;
+      letter-spacing: .2px;
+      opacity: .95;
+    }
+    /* reduce un poco el espacio entre columnas en mobile */
+    .standings-content .standings-header,
+    .standings-content .team-row{
+      column-gap: 8px !important;
+    }
+  }`;
+  document.head.appendChild(s);
+})();
+
+// --- Auto-switch to abbreviation when the chip doesn't fit
+(function ensureTeamChipAutoAbbr(){
+  if (document.getElementById('standings-team-chip-auto-abbr')) return;
+  const s = document.createElement('style');
+  s.id = 'standings-team-chip-auto-abbr';
+  s.textContent = `
+    .standings-content .team-chip.use-abbr .team-name-full{ display:none !important; }
+    .standings-content .team-chip.use-abbr .team-name-abbr{ display:inline !important; }
+  `;
+  document.head.appendChild(s);
+})();
+
+function autoAbbrevChipForCard(card){
+  const chips = card.querySelectorAll('.team-sticky .team-chip');
+  if (!chips.length) return;
+  const ro = new ResizeObserver(entries => {
+    for (const entry of entries){
+      const chip = entry.target;
+      // If text overflows the chip box, force abbreviation
+      if (chip.scrollWidth > chip.clientWidth) {
+        chip.classList.add('use-abbr');
+      } else {
+        chip.classList.remove('use-abbr');
+      }
+    }
+  });
+  chips.forEach(ch => {
+    // Measure now
+    if (ch.scrollWidth > ch.clientWidth) ch.classList.add('use-abbr');
+    else ch.classList.remove('use-abbr');
+    // Observe future resizes
+    ro.observe(ch);
+  });
+  // Also re-evaluate on window resize to be safe
+  if (!card.__autoAbbrBound){
+    const reevaluate = () => chips.forEach(ch => {
+      if (ch.scrollWidth > ch.clientWidth) ch.classList.add('use-abbr');
+      else ch.classList.remove('use-abbr');
+    });
+    window.addEventListener('resize', reevaluate, { passive: true });
+    card.__autoAbbrBound = true;
+  }
+}
+
+// --- Global abbreviation threshold (<= 1100px wide => use abbreviations)
+(function ensureAbbrThresholdStyle(){
+  if (document.getElementById('standings-abbr-threshold')) return;
+  const s = document.createElement('style');
+  s.id = 'standings-abbr-threshold';
+  s.textContent = `
+    .standings-content.abbr-1100 .team-name-full{ display:none !important; }
+    .standings-content.abbr-1100 .team-name-abbr{ display:inline !important; }
+  `;
+  document.head.appendChild(s);
+})();
+
+function applyAbbrThreshold(card){
+  const host = card.querySelector('.standings-content') || card;
+  const reevaluate = () => {
+    const w = host.clientWidth;
+    if (w < 1100) host.classList.add('abbr-1100');
+    else host.classList.remove('abbr-1100');
+  };
+  // Initial and observe resizes
+  reevaluate();
+  if (!host.__abbrObs){
+    const ro = new ResizeObserver(() => reevaluate());
+    ro.observe(host);
+    window.addEventListener('resize', reevaluate, { passive: true });
+    host.__abbrObs = ro;
+  }
+}
+
   async function renderStandings() {
     updateControlsUI();
-    standingsGrid.innerHTML = '<div class="loading">Loading standings...</div>';
+    const placeholder = document.createElement('div');
+    placeholder.className = 'loading';
+    placeholder.textContent = 'Loading standings...';
+    standingsGrid.replaceChildren(placeholder);
     const conferences = await fetchStandings();
-    standingsGrid.innerHTML = '';
+    const frag = document.createDocumentFragment();
 
     if (!conferences || !conferences.length) {
       standingsGrid.innerHTML = `<div class="no-standings-message"><p>No standings available at this time.</p></div>`;
@@ -245,59 +397,66 @@ document.addEventListener('DOMContentLoaded', async () => {
       container.innerHTML = `
         <h3 class="standings-group-title">NFL</h3>
         <div class="standings-content">
-          <div class="standings-header" style="${headerStyle}">
-            <span>Team</span>
-            <span>W</span>
-            <span>L</span>
-            <span>T</span>
-            <span>PCT</span>
-            <span>HOME</span>
-            <span>AWAY</span>
-            <span>DIV</span>
-            <span>CONF</span>
-            <span>PF</span>
-            <span>PA</span>
-            <span>DIFF</span>
-            <span>STRK</span>
-          </div>
+<div class="standings-header" style="${headerStyle}">
+  <span class="col-rank">#</span>
+  <span class="col-team">Team</span>
+  <span class="col-w">W</span>
+  <span class="col-l">L</span>
+  <span class="col-t">T</span>
+  <span class="col-pct">PCT</span>
+  <span class="col-home">HOME</span>
+  <span class="col-away">AWAY</span>
+  <span class="col-div">DIV</span>
+  <span class="col-conf">CONF</span>
+  <span class="col-pf">PF</span>
+  <span class="col-pa">PA</span>
+  <span class="col-diff">DIFF</span>
+  <span class="col-strk">STRK</span>
+</div>
           <div class="standings-teams"></div>
         </div>
       `;
 
       const teamsContainer = container.querySelector(".standings-teams");
-      allEntries.forEach(tr => {
+
+      let rowsHtml = '';
+      allEntries.forEach((tr, idx) => {
         const team = tr.team || tr;
         const stats = tr.stats || [];
         const w = getNum('wins', stats);
         const l = getNum('losses', stats);
         const t = getNum('ties', stats);
-        const label = teamLabel(team);
-        teamsContainer.innerHTML += `
-          <div class="team-row" style="${rowStyle}">
-            <span class="team-sticky">
-              <img src="${team.logos?.[0]?.href || team.logo || ''}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
-              <span class="${label.cls}">${label.text}</span>
-            </span>
-            <span class="num">${fmtInt(w)}</span>
-            <span class="num">${fmtInt(l)}</span>
-            <span class="num">${fmtInt(t)}</span>
-            <span class="num">${pctText(w, l, t, stats)}</span>
-            <span class="num">${recordText('home', stats)}</span>
-            <span class="num">${recordText('away', stats)}</span>
-            <span class="num">${recordText('division', stats)}</span>
-            <span class="num">${recordText('conference', stats)}</span>
-            <span class="num">${fmtNum(getNum('pointsFor', stats))}</span>
-            <span class="num">${fmtNum(getNum('pointsAgainst', stats))}</span>
-            <span class="num">${fmtNum(getNum('pointsFor', stats) - getNum('pointsAgainst', stats))}</span>
-            <span class="num">${getStr('streak', stats) || ((getStr('streakType', stats) || '') + (getStr('streakLength', stats) || '')) || '-'}</span>
-          </div>
-        `;
-      });
-
+      
+        rowsHtml += `
+        <div class="team-row" style="${rowStyle}">
+          <span class="col-rank rank">${idx + 1}</span>
+          <span class="col-team team-sticky">
+            <img src="${team.logos?.[0]?.href || team.logo || ''}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
+            ${teamLabelsHTML(team)}
+          </span>
+          <span class="col-w num">${fmtInt(w)}</span>
+          <span class="col-l num">${fmtInt(l)}</span>
+          <span class="col-t num">${fmtInt(t)}</span>
+          <span class="col-pct num">${pctText(w, l, t, stats)}</span>
+          <span class="col-home num">${recordText('home', stats)}</span>
+          <span class="col-away num">${recordText('away', stats)}</span>
+          <span class="col-div num">${recordText('division', stats)}</span>
+          <span class="col-conf num">${recordText('conference', stats)}</span>
+          <span class="col-pf num">${fmtNum(getNum('pointsFor', stats))}</span>
+          <span class="col-pa num">${fmtNum(getNum('pointsAgainst', stats))}</span>
+          <span class="col-diff num">${fmtNum(getNum('pointsFor', stats) - getNum('pointsAgainst', stats))}</span>
+          <span class="col-strk num">${getStr('streak', stats) || ((getStr('streakType', stats) || '') + (getStr('streakLength', stats) || '')) || '-'}</span>
+        </div>
+      `;
+    });
+      
+      teamsContainer.innerHTML = rowsHtml;
+      applyAbbrThreshold(container);
+      autoAbbrevChipForCard(container);
       attachResponsiveColumns(container);
-      attachHorizontalSlider(container);
-      container.scrollLeft = 0;
-      standingsGrid.appendChild(container);
+      attachDragScroll(container.querySelector('.standings-content'));
+      frag.appendChild(container);
+      standingsGrid.replaceChildren(frag);
       return;
     }
 
@@ -321,59 +480,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         container.innerHTML = `
           <h3 class="standings-group-title">${title}</h3>
           <div class="standings-content">
-            <div class="standings-header" style="${headerStyle}">
-              <span>Team</span>
-              <span>W</span>
-              <span>L</span>
-              <span>T</span>
-              <span>PCT</span>
-              <span>HOME</span>
-              <span>AWAY</span>
-              <span>DIV</span>
-              <span>CONF</span>
-              <span>PF</span>
-              <span>PA</span>
-              <span>DIFF</span>
-              <span>STRK</span>
-            </div>
+<div class="standings-header" style="${headerStyle}">
+  <span class="col-rank">#</span>
+  <span class="col-team">Team</span>
+  <span class="col-w">W</span>
+  <span class="col-l">L</span>
+  <span class="col-t">T</span>
+  <span class="col-pct">PCT</span>
+  <span class="col-home">HOME</span>
+  <span class="col-away">AWAY</span>
+  <span class="col-div">DIV</span>
+  <span class="col-conf">CONF</span>
+  <span class="col-pf">PF</span>
+  <span class="col-pa">PA</span>
+  <span class="col-diff">DIFF</span>
+  <span class="col-strk">STRK</span>
+</div>
             <div class="standings-teams"></div>
           </div>
         `;
 
         const teamsContainer = container.querySelector(".standings-teams");
-        confEntries.forEach(tr => {
+
+        let rowsHtml = '';
+        confEntries.forEach((tr, idx) => {
           const team = tr.team || tr;
           const stats = tr.stats || [];
           const w = getNum('wins', stats);
           const l = getNum('losses', stats);
           const t = getNum('ties', stats);
-          teamsContainer.innerHTML += `
-            <div class="team-row" style="${rowStyle}">
-              <span class="team-sticky">
-                <img src="${team.logos?.[0]?.href || team.logo || ''}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
-                <span class="team-abbr">${team.abbreviation || team.shortDisplayName || ''}</span>
-              </span>
-              <span class="num">${fmtInt(w)}</span>
-              <span class="num">${fmtInt(l)}</span>
-              <span class="num">${fmtInt(t)}</span>
-              <span class="num">${pctText(w, l, t, stats)}</span>
-              <span class="num">${recordText('home', stats)}</span>
-              <span class="num">${recordText('away', stats)}</span>
-              <span class="num">${recordText('division', stats)}</span>
-              <span class="num">${recordText('conference', stats)}</span>
-              <span class="num">${fmtNum(getNum('pointsFor', stats))}</span>
-              <span class="num">${fmtNum(getNum('pointsAgainst', stats))}</span>
-              <span class="num">${fmtNum(getNum('pointsFor', stats) - getNum('pointsAgainst', stats))}</span>
-              <span class="num">${getStr('streak', stats) || ((getStr('streakType', stats) || '') + (getStr('streakLength', stats) || '')) || '-'}</span>
-            </div>
-          `;
-        });
-
-        attachResponsiveColumns(container);
-        attachHorizontalSlider(container);
-        container.scrollLeft = 0;
-        standingsGrid.appendChild(container);
+        
+          rowsHtml += `
+          <div class="team-row" style="${rowStyle}">
+            <span class="col-rank rank">${idx + 1}</span>
+            <span class="col-team team-sticky">
+              <img src="${team.logos?.[0]?.href || team.logo || ''}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
+              ${teamLabelsHTML(team)}
+            </span>
+            <span class="col-w num">${fmtInt(w)}</span>
+            <span class="col-l num">${fmtInt(l)}</span>
+            <span class="col-t num">${fmtInt(t)}</span>
+            <span class="col-pct num">${pctText(w, l, t, stats)}</span>
+            <span class="col-home num">${recordText('home', stats)}</span>
+            <span class="col-away num">${recordText('away', stats)}</span>
+            <span class="col-div num">${recordText('division', stats)}</span>
+            <span class="col-conf num">${recordText('conference', stats)}</span>
+            <span class="col-pf num">${fmtNum(getNum('pointsFor', stats))}</span>
+            <span class="col-pa num">${fmtNum(getNum('pointsAgainst', stats))}</span>
+            <span class="col-diff num">${fmtNum(getNum('pointsFor', stats) - getNum('pointsAgainst', stats))}</span>
+            <span class="col-strk num">${getStr('streak', stats) || ((getStr('streakType', stats) || '') + (getStr('streakLength', stats) || '')) || '-'}</span>
+          </div>
+        `;
       });
+        
+        teamsContainer.innerHTML = rowsHtml;
+        applyAbbrThreshold(container);
+        autoAbbrevChipForCard(container);
+        attachResponsiveColumns(container);
+        attachDragScroll(container.querySelector('.standings-content'));
+        frag.appendChild(container);
+      });
+      standingsGrid.replaceChildren(frag);
       return;
     }
 
@@ -417,29 +584,30 @@ document.addEventListener('DOMContentLoaded', async () => {
       container.innerHTML = `
         <h3 class="standings-group-title">${key}</h3>
         <div class="standings-content">
-          <div class="standings-header" style="${headerStyle}">
-            <span>Team</span>
-            <span>W</span>
-            <span>L</span>
-            <span>T</span>
-            <span>PCT</span>
-            <span>HOME</span>
-            <span>AWAY</span>
-            <span>DIV</span>
-            <span>CONF</span>
-            <span>PF</span>
-            <span>PA</span>
-            <span>DIFF</span>
-            <span>STRK</span>
-          </div>
+<div class="standings-header" style="${headerStyle}">
+  <span class="col-rank">#</span>
+  <span class="col-team">Team</span>
+  <span class="col-w">W</span>
+  <span class="col-l">L</span>
+  <span class="col-t">T</span>
+  <span class="col-pct">PCT</span>
+  <span class="col-home">HOME</span>
+  <span class="col-away">AWAY</span>
+  <span class="col-div">DIV</span>
+  <span class="col-conf">CONF</span>
+  <span class="col-pf">PF</span>
+  <span class="col-pa">PA</span>
+  <span class="col-diff">DIFF</span>
+  <span class="col-strk">STRK</span>
+</div>
           <div class="standings-teams"></div>
         </div>
       `;
 
       const teamsContainer = container.querySelector('.standings-teams');
       const entries = div.standings?.entries || div.teamRecords || [];
-
-      // Sort by wins desc, then point differential desc
+      
+      // Sort por wins desc y diff desc (conserva tu lógica actual)
       entries.sort((a, b) => {
         const as = a.stats || []; const bs = b.stats || [];
         const gv = (arr, n) => Number(statObj(arr, n)?.value ?? 0);
@@ -449,41 +617,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         const bpd = gv(bs,'pointsFor') - gv(bs,'pointsAgainst');
         return bpd - apd;
       });
-
-      entries.forEach(tr => {
+      
+      let rowsHtml = '';
+      entries.forEach((tr, idx) => {
         const team = tr.team || tr;
         const stats = tr.stats || [];
         const w = getNum('wins', stats);
         const l = getNum('losses', stats);
         const t = getNum('ties', stats);
-        const label = teamLabel(team);
-        teamsContainer.innerHTML += `
-          <div class="team-row" style="${rowStyle}">
-            <span class="team-sticky">
-              <img src="${team.logos?.[0]?.href || team.logo || ''}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
-              <span class="${label.cls}">${label.text}</span>
-            </span>
-            <span class="num">${fmtInt(w)}</span>
-            <span class="num">${fmtInt(l)}</span>
-            <span class="num">${fmtInt(t)}</span>
-            <span class="num">${pctText(w, l, t, stats)}</span>
-            <span class="num">${recordText('home', stats)}</span>
-            <span class="num">${recordText('away', stats)}</span>
-            <span class="num">${recordText('division', stats)}</span>
-            <span class="num">${recordText('conference', stats)}</span>
-            <span class="num">${fmtNum(getNum('pointsFor', stats))}</span>
-            <span class="num">${fmtNum(getNum('pointsAgainst', stats))}</span>
-            <span class="num">${fmtNum(getNum('pointsFor', stats) - getNum('pointsAgainst', stats))}</span>
-            <span class="num">${getStr('streak', stats) || ((getStr('streakType', stats) || '') + (getStr('streakLength', stats) || '')) || '-'}</span>
-          </div>
-        `;
-      });
-
-      attachResponsiveColumns(container);
-      attachHorizontalSlider(container);
-      container.scrollLeft = 0;
-      standingsGrid.appendChild(container);
+      
+        rowsHtml += `
+        <div class="team-row" style="${rowStyle}">
+          <span class="col-rank rank">${idx + 1}</span>
+          <span class="col-team team-sticky">
+            <img src="${team.logos?.[0]?.href || team.logo || ''}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
+            ${teamLabelsHTML(team)}
+          </span>
+          <span class="col-w num">${fmtInt(w)}</span>
+          <span class="col-l num">${fmtInt(l)}</span>
+          <span class="col-t num">${fmtInt(t)}</span>
+          <span class="col-pct num">${pctText(w, l, t, stats)}</span>
+          <span class="col-home num">${recordText('home', stats)}</span>
+          <span class="col-away num">${recordText('away', stats)}</span>
+          <span class="col-div num">${recordText('division', stats)}</span>
+          <span class="col-conf num">${recordText('conference', stats)}</span>
+          <span class="col-pf num">${fmtNum(getNum('pointsFor', stats))}</span>
+          <span class="col-pa num">${fmtNum(getNum('pointsAgainst', stats))}</span>
+          <span class="col-diff num">${fmtNum(getNum('pointsFor', stats) - getNum('pointsAgainst', stats))}</span>
+          <span class="col-strk num">${getStr('streak', stats) || ((getStr('streakType', stats) || '') + (getStr('streakLength', stats) || '')) || '-'}</span>
+        </div>
+      `;
     });
+      
+      teamsContainer.innerHTML = rowsHtml;
+      applyAbbrThreshold(container);
+      autoAbbrevChipForCard(container);
+      attachResponsiveColumns(container);
+      attachDragScroll(container.querySelector('.standings-content'));
+      frag.appendChild(container);
+    });
+    standingsGrid.replaceChildren(frag);
+    return;
   }
 
   // Button handlers
@@ -512,12 +686,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Re-render on viewport changes so desktop shows full names and mobile shows abbreviations
-  window.addEventListener('resize', () => {
-    if (currentView === 'division' || currentView === 'league') {
-      renderStandings();
-    }
-  });
+
 
   updateControlsUI();
   renderStandings();
