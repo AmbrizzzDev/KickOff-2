@@ -387,7 +387,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 { word: 'blocked', label: 'BLOCKED', style: 'color:#fff;background:#2f1010;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid#f35d21;' },
                 { word: 'suspended', label: 'SUSPENDED', style: 'color:#fff;background:#2f1010;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f32121;' },
                 { word: 'penalty', label: 'FLAG', style: 'color:#fff;background:#2f2a10;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f3d321;' },
+                { word: 'challenge', label: 'CHALLENGE', style: 'color:#fff;background:#C82333;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #C82333;' },
                 { word: 'end game', label: 'FINAL', style: 'color:#fff;background:#10162f;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #EF7C08;' },
+                { word: 'reversed', label: 'R', style: 'color:#fff;background:#2f1e10;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f38321;' },
                 { word: 'touchdown', label: 'TD', style: 'color:#fff;background:#2f1e10;padding:0.13em 0.7em;border-radius:6px;font-size:.98em;font-weight:bolder;letter-spacing:1px;border:2px solid #f38321;' },
                 { word: 'fumble', label: 'FUM', style: 'color:#222;background:#FFEE5C;padding:0.1em 0.5em;border-radius:6px;font-weight:bold;font-size:.93em;' },
                 { word: 'intercepted', label: 'INT', style: 'color:#fff;background:#C82333;padding:0.1em 0.5em;border-radius:6px;font-weight:bold;font-size:.93em;' },
@@ -425,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // STATS TAB (comparativa centrada)
           try {
             const boxscoreUrl = currentLeague === 'nfl'
-              ? `/data/api/espn-boxscore-cdn?gameId=${evt.id}`
+              ? `/api/espn-boxscore-cdn?gameId=${evt.id}`
               : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/boxscore?event=${evt.id}`;
             const boxRes = await fetch(boxscoreUrl);
             const boxData = await boxRes.json();
