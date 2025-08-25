@@ -88,11 +88,11 @@ function teamLabelsHTML(team) {
 // ancho cómodo para que no se pisen; el contenedor hará scroll-x
 // Grid (desktop) — TEAM menos ancho
 const GRID_FULL =
-  '56px minmax(140px,1.2fr) 48px 48px 48px 64px 84px 84px 84px 84px 64px 64px 68px 68px';
+  '56px minmax(48px, .4fr) 48px 48px 48px 48px 64px 84px 84px 84px 84px 64px 64px 68px 68px';
 
 // Grid (mobile/tablet) — TEAM aún más compacto
 const GRID_MOBILE =
-  '36px minmax(72px,0.9fr) 42px 42px 42px 56px 64px 64px 64px 64px 56px 56px 60px 60px';
+  '36px minmax(48px, .4fr) 42px 42px 42px 56px 64px 64px 64px 64px 56px 56px 60px 60px';
 
 // Aplica el grid según el viewport (y actualiza en resize)
 function attachResponsiveColumns(card) {
@@ -458,7 +458,6 @@ function applyAbbrThreshold(card){
           <span class="col-rank rank">${idx + 1}</span>
           <span class="col-team team-sticky">
             <img src="${getTeamLogo(team)}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
-            ${teamLabelsHTML(team)}
           </span>
           <span class="col-w num">${fmtInt(w)}</span>
           <span class="col-l num">${fmtInt(l)}</span>
@@ -541,7 +540,6 @@ function applyAbbrThreshold(card){
             <span class="col-rank rank">${idx + 1}</span>
             <span class="col-team team-sticky">
               <img src="${getTeamLogo(team)}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
-              ${teamLabelsHTML(team)}
             </span>
             <span class="col-w num">${fmtInt(w)}</span>
             <span class="col-l num">${fmtInt(l)}</span>
@@ -657,7 +655,6 @@ function applyAbbrThreshold(card){
           <span class="col-rank rank">${idx + 1}</span>
           <span class="col-team team-sticky">
             <img src="${getTeamLogo(team)}" alt="${team.abbreviation || team.shortDisplayName || ''}" class="team-logo-sm">
-            ${teamLabelsHTML(team)}
           </span>
           <span class="col-w num">${fmtInt(w)}</span>
           <span class="col-l num">${fmtInt(l)}</span>
