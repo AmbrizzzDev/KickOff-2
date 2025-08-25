@@ -16,53 +16,49 @@ document.addEventListener('DOMContentLoaded', () => {
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateFavicon);
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    const DATE_TARGET = new Date('2025-09-04T00:20:00');
-    const SPAN_DAYS = document.querySelector('span#days');
-    const SPAN_HOURS = document.querySelector('span#hours');
-    const SPAN_MINUTES = document.querySelector('span#minutes');
-    const SPAN_SECONDS = document.querySelector('span#seconds');
+//document.addEventListener('DOMContentLoaded', () => {
+//    const DATE_TARGET = new Date('2025-09-04T00:20:00');
+//    const SPAN_DAYS = document.querySelector('span#days');
+//    const SPAN_HOURS = document.querySelector('span#hours');
+//    const SPAN_MINUTES = document.querySelector('span#minutes');
+//    const SPAN_SECONDS = document.querySelector('span#seconds');
   
-    const CARDS = {
-      days: SPAN_DAYS.parentElement,
-      hours: SPAN_HOURS.parentElement,
-      minutes: SPAN_MINUTES.parentElement,
-      seconds: SPAN_SECONDS.parentElement
-    };
+//    const CARDS = {
+//      days: SPAN_DAYS.parentElement,
+//      hours: SPAN_HOURS.parentElement,
+//      minutes: SPAN_MINUTES.parentElement,
+//      seconds: SPAN_SECONDS.parentElement
+//    };
   
-    let last = {
-      days: null, hours: null, minutes: null, seconds: null
-    };
+//    let last = {
+//      days: null, hours: null, minutes: null, seconds: null
+//    };
   
-    function animate(card) {
-      card.classList.remove('small-anim');
-      // Reinicia animación
-      void card.offsetWidth;
-      card.classList.add('small-anim');
-    }
+//    function animate(card) {
+//      card.classList.remove('small-anim');
+//      // Reinicia animación
+//      void card.offsetWidth;
+//      card.classList.add('small-anim');
+//    }
   
-    function updateCountdown() {
-      const now = new Date();
-      const diff = DATE_TARGET - now;
+//    function updateCountdown() {
+//      const now = new Date();
+//      const diff = DATE_TARGET - now;
   
-      const days = Math.max(Math.floor(diff / 8.64e7), 0);
-      const hours = Math.max(Math.floor((diff % 8.64e7) / 3.6e6), 0);
-      const minutes = Math.max(Math.floor((diff % 3.6e6) / 6e4), 0);
-      const seconds = Math.max(Math.floor((diff % 6e4) / 1e3), 0);
+//      const days = Math.max(Math.floor(diff / 8.64e7), 0);
+//      const hours = Math.max(Math.floor((diff % 8.64e7) / 3.6e6), 0);
+//      const minutes = Math.max(Math.floor((diff % 3.6e6) / 6e4), 0);
+//      const seconds = Math.max(Math.floor((diff % 6e4) / 1e3), 0);
   
-      if (last.days !== days)   { SPAN_DAYS.textContent = days.toString().padStart(2,'0'); animate(CARDS.days);}
-      if (last.hours !== hours) { SPAN_HOURS.textContent = hours.toString().padStart(2,'0'); animate(CARDS.hours);}
-      if (last.minutes !== minutes) { SPAN_MINUTES.textContent = minutes.toString().padStart(2,'0'); animate(CARDS.minutes);}
-      if (last.seconds !== seconds) { SPAN_SECONDS.textContent = seconds.toString().padStart(2,'0'); animate(CARDS.seconds);}
+//      if (last.days !== days)   { SPAN_DAYS.textContent = days.toString().padStart(2,'0'); animate(CARDS.days);}
+//      if (last.hours !== hours) { SPAN_HOURS.textContent = hours.toString().padStart(2,'0'); animate(CARDS.hours);}
+//      if (last.minutes !== minutes) { SPAN_MINUTES.textContent = minutes.toString().padStart(2,'0'); animate(CARDS.minutes);}
+//      if (last.seconds !== seconds) { SPAN_SECONDS.textContent = seconds.toString().padStart(2,'0'); animate(CARDS.seconds);}
   
-      last = {days, hours, minutes, seconds};
-    }
+//      last = {days, hours, minutes, seconds};
+//    }
   
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-  });
-  
-  
-  
-
+//    updateCountdown();
+//    setInterval(updateCountdown, 1000);
+//  });
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
