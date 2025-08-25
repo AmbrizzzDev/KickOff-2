@@ -1,5 +1,19 @@
+:root  {
+  --bg: #0b0f1a;
+  --card-bg1: var(--card-bg, #111827);
+  --card-dark: #0f1625;
+  --card-elev: rgba(255,255,255,.04);
+  --text: var(--text-light, #e7eaf3);
+  --text-dim: #a7b0c0;
+  --muted: #9aa7bd;
+  --accent: #2196f3;
+  --accent-2: #6cc7ff;
+  --border: rgba(255,255,255,.08);
+  --ring: rgba(33,150,243,.55);
+}
+
 .matches-section {
-    padding: 2rem 5%;
+  padding: 2rem 5%;
 }
 
 .filters {
@@ -10,24 +24,22 @@
     justify-content: center;
 }
 
-.week-filter {
-    padding: 0.8rem;
-    border-radius: 25px;
-    background: var(--card-bg);
-    color: var(--text-light);
-    border: none;
-    font-family: 'Poppins', sans-serif;
-    text-align: center;
+.week-filter,
+.seasonTypeFilter{
+  appearance: none;
+  background: var(--card-bg1);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: .6rem .9rem;
+  font-weight: 600;
+  letter-spacing: .2px;
+  cursor: pointer;
 }
-
-.seasonTypeFilter {
-    padding: 0.8rem;
-    border-radius: 25px;
-    background: var(--card-bg);
-    color: var(--text-light);
-    border: none;
-    font-family: 'Poppins', sans-serif;
-    text-align: center;
+.week-filter:focus-visible,
+.seasonTypeFilter:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .filters-search {
@@ -63,9 +75,65 @@
 }
 
 .matches-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  justify-content: center; /* center the track area */
+  align-content: start;
+}
+
+/* ===== Responsive scaling for small phones ===== */
+@media (max-width: 480px){
+  .matches-grid{
+    grid-template-columns: 1fr; /* single column so cards never overflow */
+    place-items: stretch;
+    gap: 0.9rem;
+  }
+  .match-card{ padding: 1rem; }
+  .team-logo{ width: 52px; height: 52px; }
+  .team-name{ font-size: .95rem; }
+  .score{ font-size: 1.6rem; }
+  .vs-text{ font-size: 1.25rem; }
+  .live-badge, .final-badge{ font-size: .85rem; padding: .22rem .65rem; }
+}
+
+@media (max-width: 420px){
+  .matches-grid{ gap: 0.8rem; }
+  .match-card{ padding: .9rem; }
+  .team-logo{ width: 46px; height: 46px; }
+  .team-name{ font-size: .9rem; }
+  .score{ font-size: 1.45rem; }
+  .vs-text{ font-size: 1.15rem; }
+  .match-header{ gap: .5rem; }
+  .tabs .tab-btn{ padding: .45rem .8rem; font-size: .9rem; }
+  .pbp-card{ width: 95vw; padding: 12px 8px; }
+}
+
+@media (max-width: 360px){
+  .matches-grid{ gap: 0.7rem; }
+  .match-card{ 
+    padding: .8rem;
+    transform: scale(0.95);
+    transform-origin: top center;
+  }
+  .team-logo{ width: 40px; height: 40px; }
+  .team-name{ font-size: .85rem; }
+  .score{ font-size: 1.32rem; }
+  .vs-text{ font-size: 1.05rem; }
+  .live-badge, .final-badge{ font-size: .78rem; padding: .18rem .55rem; }
+}
+
+@media (max-width: 320px){
+  .match-card {
+    padding: .55rem;
+    transform: scale(0.92);
+    transform-origin: top center;
+  }
+  .team-logo { width: 30px; height: 30px; }
+  .team-name { font-size: .7rem; }
+  .score { font-size: 1rem; }
+  .vs-text { font-size: .8rem; }
+  .match-header, .teams-container { gap: .35rem; }
 }
 
 .match-card {
@@ -74,6 +142,7 @@
     padding: 1.5rem;
     position: relative;
     transition: transform 0.3s;
+    width: 100%;
 }
 
 .match-card.live {

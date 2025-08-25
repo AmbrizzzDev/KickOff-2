@@ -1,6 +1,6 @@
 .standings-container {
   padding: 2rem min(5vw, 48px);
-  max-width: 1800px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -48,7 +48,7 @@
 .standings-grid,
 .standings-table { /* keep compatibility */
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1.25rem;
 }
 
@@ -59,6 +59,8 @@
   border: 1px solid rgba(255,255,255,.06);
   box-shadow: 0 10px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
   overflow: hidden;
+  max-height: 520px; /* ajusta según prefieras */
+  overflow-y: auto;
 }
 
 /* Group title */
@@ -129,8 +131,8 @@
   display: grid;
   grid-template-columns: var(--gridCols);
   align-items: center;
-  gap: 12px;
-  padding: .6rem 1rem;
+  gap: 8px;
+  padding: .4rem .75rem;
   margin: 0;
   border-bottom: 1px dashed rgba(255,255,255,.06);
 }
@@ -155,6 +157,8 @@
   height: 26px;
   object-fit: contain;
   filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+  margin: 0 auto;
+  display: block;
 }
 /* Empty state */
 .no-standings-message {
@@ -221,27 +225,36 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable both-edges;
+  max-height: 520px; /* ajusta según prefieras */
+  overflow-y: auto;
 }
 
 /* Keep first column sticky (headers and rows) */
 .standings-header span:first-child {
-  position: sticky;
-  left: 0;
-  z-index: 3;
-  min-width: 140px; /* logo + ABBR */
-  backdrop-filter: blur(6px);
+  position: initial;
+  left: auto;
+  z-index: auto;
+  min-width: 60px; /* logo + ABBR */
+  backdrop-filter: none;
+  text-align: center;
 }
 
 .team-row .team-sticky {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  min-width: 140px; /* logo + ABBR */
-  backdrop-filter: blur(.1px);
+  position: relative;
+  left: auto;
+  z-index: auto;
+  min-width: 60px; /* logo + ABBR */
   display: flex;
   align-items: center;
   gap: .55rem;
-  padding-left: 4px;
+  padding-left: 0;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.team-row .team-sticky .team-logo-sm {
+  position: sticky;
+  left: 0;
+  z-index: 3;
 }
 
 /* Logo + text sizing */
@@ -250,6 +263,8 @@
   height: 26px;
   object-fit: contain;
   flex: 0 0 auto;
+  margin: 0 auto;
+  display: block;
 }
 .team-row .team-abbr {
   font-weight: 700;
@@ -273,7 +288,7 @@
 .team-row .num { text-align: right; }
 .standings-header span { text-align: right; }
 .standings-header span:first-child,
-.team-row .team-sticky { text-align: left; }
+.team-row .team-sticky { text-align: center; }
 
 /* Optional: subtle custom scrollbar */
 .standings-group::-webkit-scrollbar { height: 10px; }
@@ -309,12 +324,19 @@
   .standings-scroll {
     overflow-x: auto;
     white-space: nowrap;
+    position: relative;
   }
   
-  .standings-header,
-  .team-row {
-    display: flex;
-    min-width: 900px; /* ajusta según la cantidad de columnas */
+  .standings-scroll::after{
+    content: '';
+    position: sticky;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 48px;
+    pointer-events: none;
+    z-index: 5;
+    background: linear-gradient(90deg, rgba(12,12,18,1) 0%, rgba(12,12,18,.85) 40%, rgba(12,12,18,0) 100%);
   }
   
   .standings-header span,
@@ -382,6 +404,7 @@
   overflow-y: hidden;
   /* suaviza el arrastre horizontal */
   -webkit-overflow-scrolling: touch;
+  position: relative;
 }
 
 /* filas y encabezados: grid consistente y ancho mínimo para no colapsar */
@@ -391,7 +414,8 @@
   grid-template-columns: var(--gridCols);
   column-gap: 12px;
   align-items: center;
-  min-width: 1200px;           /* <- clave para que no se amontone */
+  width: max-content;
+  min-width: unset;
 }
 
 /* que los spans no “rompan” el grid */
@@ -403,14 +427,15 @@
 /* bloque team (logo + texto) ordenado y sin desbordes */
 /* Hace que la celda del equipo no se expanda de más y recorte con puntos si falta espacio */
 .team-sticky {
-  min-width: 120px;      /* evita que el logo + abrev se aplaste de más */
-  max-width: 220px;      /* tope para que no se coma la fila completa */
+  min-width: 100px;
+  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: .5rem;
+  padding-left: 36px;
 }
 
 /* logo con tamaño fijo para que no invada otras celdas */
@@ -427,19 +452,26 @@
   text-align: center;
 }
 
+/* Re-affirm column alignment so cells center under their headers, while the Team cell stays left-aligned */
+.standings-group .standings-header > span,
+.standings-group .team-row > span { text-align: center; }
+.standings-group .standings-header > span:first-child,
+.standings-group .team-row > .team-sticky { text-align: left; }
+
 /* columnas pegajosas (# y Team) para que no “pisen” al hacer scroll-x */
 .rank {
-  position: sticky;
-  left: 0;
-  z-index: 3;
+  position: initial;
+  left: auto;
+  z-index: auto;
 }
 
 /* Team va después del #; alinea con padding si usas bordes/redondeo */
 .team-sticky {
-  position: sticky;
-  left: 56px;                 /* coincide con la 1ª columna (#) */
-  z-index: 2;
-  padding-right: 8px;         /* separa del resto para que no se “pegue” */
+  position: relative;
+  left: auto;
+  z-index: auto;
+  padding-right: 8px;
+  backdrop-filter: none;
 }
 
 /* evita que el título/gradiente se corte: que el bloque cubra todo el ancho scrolleable */
@@ -481,7 +513,8 @@
   }
 
   .standings-group .team-logo-sm {
-    width: 18px; height: 18px;
+    width: 36px;
+    height: 36px;
     margin-right: 6px;
   }
 
@@ -502,4 +535,9 @@
 @media (max-width: 1024px) {
   .team-name-full { display: none !important; }
   .team-name-abbr { display: inline !important; }
+}
+
+/* Alinea la primera columna (Team) con el espacio del logo sticky */
+.standings-group .standings-header > span:first-child{
+  padding-left: 36px;
 }
