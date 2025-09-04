@@ -1,0 +1,847 @@
+/* /css/teams.css */
+
+/* ===== Base / Layout ===== */
+:root{
+    --bg: #0b0f1a;
+    --card-bg: var(--card-bg, #111827);
+    --card-dark: #0f1625;
+    --card-elev: rgba(255,255,255,.04);
+    --text: var(--text-light, #e7eaf3);
+    --text-dim: #a7b0c0;
+    --muted: #9aa7bd;
+    --accent: #2196f3;
+    --accent-2: #6cc7ff;
+    --border: rgba(255,255,255,.08);
+    --ring: rgba(33,150,243,.55);
+  }
+  
+  #teamsPage{
+    width: 100%;
+    display: block;
+  }
+  
+  .teams-wrap{
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(20px, 4vw, 40px);
+  }
+  
+  /* ===== Toolbar (AFC / NFC) ===== */
+  .teams-toolbar{
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    backdrop-filter: blur(8px);
+    padding: .5rem 0 1.25rem;
+  }
+  
+  .conf-btn{
+    -webkit-tap-highlight-color: transparent;
+    border: 1px solid rgba(255,255,255,.08);
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    color: var(--text-light);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    letter-spacing: .25px;
+    padding: .6rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+    backdrop-filter: blur(6px);
+  }
+  .conf-btn:hover{ transform: translateY(-1px); }
+  .conf-btn:focus-visible{
+    transform: translateY(-1px);
+    border-color: rgba(255,255,255,.18);
+    box-shadow: 0 0 0 2px rgba(255,255,255,.04), 0 8px 26px rgba(0,0,0,.28);
+  }
+  .conf-btn.active{
+    border-color: color-mix(in oklab, var(--primary-color) 65%, #fff 0%);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary-color) 22%, transparent), 0 0 22px color-mix(in oklab, var(--primary-color) 30%, transparent);
+    background: linear-gradient(180deg,
+      color-mix(in oklab, var(--primary-color) 18%, transparent),
+      color-mix(in oklab, var(--secondary-color, #6cf) 10%, transparent)
+    );
+  }
+  
+  /* ===== Teams list ===== */
+ .teams-list{
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0,1fr));
+   gap: 1.25rem;
+ }
+ @media (max-width: 980px){
+   .teams-list{
+     grid-template-columns: 1fr;
+   }
+ }
+  
+  /* Division “card” */
+.teams-division-card{
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,.22);
+    /* spacing from page/container edges */
+    margin: 0 1.75rem 1.25rem 1.75rem;
+  }
+  
+  /* Division title bar spans full card width (also when grid inside scrolls) */
+  .division-title{
+    margin: 0;
+    padding: 1rem 1.25rem;
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: .4px;
+    color: var(--text);
+    background:
+      linear-gradient(90deg, color-mix(in oklab, var(--accent) 20%, transparent) 0%, transparent 25%, transparent 75%, color-mix(in oklab, var(--accent-2) 18%, transparent) 100%),
+      color-mix(in oklab, var(--card-bg) 92%, black 8%);
+    border-bottom: 1px solid var(--border);
+  }
+  
+  /* Grid of teams */
+  .division-grid{
+    display: grid;
+    grid-template-columns: 1fr; /* equipos apilados verticalmente */
+    gap: 0.9rem;
+    padding: 1.25rem 1.4rem;
+  }
+  
+  /* Team item */
+  .team-item{
+    width: 100%;
+    text-align: left;
+    display: flex;
+    gap: .75rem;
+    align-items: center;
+    padding: .75rem .85rem;
+    background: color-mix(in oklab, var(--card-bg) 96%, white 0%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .team-item:hover{
+    transform: translateY(-1px);
+    border-color: color-mix(in oklab, var(--accent) 35%, var(--border) 65%);
+    box-shadow: 0 8px 24px rgba(33,150,243,.12), 0 2px 0 0 rgba(255,255,255,.02) inset;
+  }
+  .team-item:active{ transform: translateY(0); }
+  
+  .team-logo-sm{
+    width: 36px; height: 36px; object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.35));
+  }
+  
+  .team-item-text{
+    display: grid;
+    line-height: 1.1;
+  }
+  .team-item-text .abbr{
+    font-weight: 800;
+    font-size: .95rem;
+    color: var(--text);
+    letter-spacing: .3px;
+  }
+  .team-item-text .name{
+    font-weight: 500;
+    font-size: .86rem;
+    color: var(--text-dim);
+  }
+  @media (max-width: 520px){
+    .team-item{
+      padding: .7rem .8rem;
+    }
+    .team-logo-sm{ width: 32px; height: 32px; }
+    .team-item-text .abbr{ font-size: .92rem; }
+    .team-item-text .name{ font-size: .8rem; }
+  }
+  
+  /* ===== Team detail (sub-page) ===== */
+  .team-detail{
+    background: transparent;
+    padding: clamp(14px, 2.5vw, 28px);  
+}
+  
+  .team-detail-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+    margin-bottom: 1.25rem;
+}
+  
+  .back-btn{
+    appearance: none;
+    padding: .55rem .85rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--card-bg) 92%, #111 8%);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 600;
+    transition: border-color .12s ease, transform .12s ease, box-shadow .12s ease;
+  }
+  .back-btn:hover{
+    border-color: color-mix(in oklab, var(--accent) 35%, var(--border) 65%);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(33,150,243,.12);
+  }
+  
+  .team-head{
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    margin-left: auto;
+  }
+  .team-logo-lg{
+    width: 56px; height: 56px; object-fit: contain;
+    filter: drop-shadow(0 6px 16px rgba(0,0,0,.35));
+  }
+  .team-head-text{
+    display: grid;
+  }
+  .team-title{
+    margin: 0;
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: .3px;
+    color: var(--text);
+  }
+  .team-sub{
+    color: var(--text-dim);
+    font-size: .9rem;
+  }
+  
+  /* ===== Tabs ===== */
+  .tabs{
+    display: flex;
+    gap: .5rem;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    margin: .75rem 0 1.25rem;
+    padding-bottom: .75rem;
+  }
+  .tab-btn{
+    appearance: none;
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: .5rem .9rem;
+    font-weight: 700;
+    letter-spacing: .3px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+  }
+  .tab-btn:hover{
+    color: var(--text);
+    background: color-mix(in oklab, var(--card-bg) 88%, white 0%);
+    border-color: var(--border);
+  }
+  .tab-btn.active{
+    color: var(--text);
+    background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 20%, #0f1625 80%), var(--card-bg));
+    border-color: color-mix(in oklab, var(--accent) 35%, #000 65%);
+    box-shadow: 0 4px 20px rgba(33,150,243,.18);
+  }
+  
+  /* ===== Schedule filters ===== */
+  .filters{
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    margin: .5rem 0 1.25rem;
+    flex-wrap: wrap;
+  }
+  .filters.hidden{ display: none; }
+  
+  .season-type-select,
+  .season-year-select{
+    appearance: none;
+    background: var(--card-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: .6rem .9rem;
+    font-weight: 600;
+    letter-spacing: .2px;
+    cursor: pointer;
+  }
+  .season-type-select:focus-visible,
+  .season-year-select:focus-visible{
+    outline: none;
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  
+  /* ===== Panels / Tables ===== */
+  .team-panels{
+    display: grid;
+    gap: 1.25rem;
+}
+  .tab-panel.hidden{ display: none; }
+  
+  /* Generic table shell */
+.roster-table,
+.schedule-table,
+.injuries-table,
+.stats-table{
+    width: 100%;
+    max-width: 100%;
+    background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.008));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin: .75rem 0 1.25rem;
+    padding: .8rem 1.1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    cursor: grab;
+}
+  .roster-table.is-dragging,
+  .schedule-table.is-dragging,
+  .injuries-table.is-dragging,
+  .stats-table.is-dragging{ cursor: grabbing; }
+
+.roster-table > * { white-space: nowrap; }
+  
+  /* Rows */
+  .roster-table .row,
+  .schedule-table .row,
+  .injuries-table .row,
+  .stats-table .row{
+    display: grid;
+    align-items: center;
+    gap: .5rem;
+    padding: .65rem .9rem;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    color: var(--text);
+  }
+  .roster-table .row.header,
+  .schedule-table .row.header,
+  .injuries-table .row.header,
+  .stats-table .row.header{
+    position: sticky;
+    top: 0;
+    background: color-mix(in oklab, var(--card-bg) 95%, black 5%);
+    z-index: 1;
+    font-weight: 800;
+    letter-spacing: .35px;
+    text-transform: uppercase;
+    font-size: .78rem;
+  }
+  
+  /* Column templates (reasonable defaults) */
+.roster-table .row{ 
+    grid-template-columns: 56px minmax(140px,1.2fr) 64px 72px 72px 72px minmax(140px,1fr);
+    min-width: 700px;
+}
+.schedule-table .row{
+    grid-template-columns: 90px minmax(140px,1fr) minmax(140px,1fr) 90px 120px;
+    min-width: 660px;
+}
+.injuries-table .row{
+    grid-template-columns: minmax(140px,1fr) 120px minmax(200px,1.4fr) 110px;
+    min-width: 680px;
+}
+.stats-table .row{
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(80px, auto);
+    min-width: 760px;
+}
+  
+  /* Cell styles */
+  .roster-table .row span,
+  .schedule-table .row span,
+  .injuries-table .row span,
+  .stats-table .row span{
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .roster-table .row.header span,
+  .schedule-table .row.header span,
+  .injuries-table .row.header span,
+  .stats-table .row.header span{
+    color: var(--text-dim);
+  }
+  
+  /* Section titles inside panels */
+  .roster-section,
+  .stats-section{
+    background: transparent;
+    border: none;
+  }
+  .roster-pos,
+  .stats-pos{
+    margin: .4rem 0 .8rem;
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: .3px;
+    color: var(--text);
+  }
+  
+  /* Helpers */
+  .loading, .muted, .error{
+    padding: 1.1rem 1rem;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    color: var(--text-dim);
+    background: color-mix(in oklab, var(--card-bg) 96%, white 0%);
+  }
+  .error{ color: #ff8b8b; border-color: rgba(255, 120, 120, .35); }
+  
+  /* ===== Responsive tweaks ===== */
+  @media (max-width: 880px){
+    .team-detail-header{
+      flex-direction: column;
+      align-items: stretch;
+      gap: .75rem;
+    }
+    .team-head{ margin-left: 0; }
+    .team-logo-lg{ width: 52px; height: 52px; }
+  }
+  
+  @media (max-width: 600px){
+    .teams-toolbar{ gap: .5rem; }
+    .conf-btn{ padding: .5rem .85rem; }
+    .team-title{ font-size: 1.05rem; }
+    .team-sub{ font-size: .85rem; }
+  }
+  
+  /* Nice scrollbar for horizontal tables */
+  .roster-table,
+  .schedule-table,
+  .injuries-table,
+  .stats-table{
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--accent) 45%, #1a2233 55%) transparent;
+  }
+  .roster-table::-webkit-scrollbar,
+  .schedule-table::-webkit-scrollbar,
+  .injuries-table::-webkit-scrollbar,
+  .stats-table::-webkit-scrollbar{
+    height: 10px;
+  }
+  .roster-table::-webkit-scrollbar-track,
+  .schedule-table::-webkit-scrollbar-track,
+  .injuries-table::-webkit-scrollbar-track,
+  .stats-table::-webkit-scrollbar-track{
+    background: transparent;
+  }
+  .roster-table::-webkit-scrollbar-thumb,
+  .schedule-table::-webkit-scrollbar-thumb,
+  .injuries-table::-webkit-scrollbar-thumb,
+  .stats-table::-webkit-scrollbar-thumb{
+    background: color-mix(in oklab, var(--accent) 45%, #1a2233 55%);
+    border-radius: 999px;
+  }
+
+  /* Generic horizontal drag-scroll helper */
+  .hscroll,
+  [data-hscroll]{
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--accent) 45%, #1a2233 55%) transparent;
+    cursor: grab;
+  }
+  .hscroll.is-dragging,
+  [data-hscroll].is-dragging{ cursor: grabbing; }
+  .hscroll > *,
+  [data-hscroll] > * { white-space: nowrap; }
+
+  /* Position chips row becomes horizontally scrollable */
+  .positions-filter,
+  .pos-filter,
+  .positions-bar{
+    display: flex;
+    gap: .5rem;
+    overflow: hidden; /* paired with data-hscroll to expose only X */
+  }
+  
+  /* Focus ring */
+  :focus-visible, select:focus-visible{
+    outline: none;
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  
+  /* Subtle text shimmer for loads (optional) */
+  .loading{
+    position: relative;
+    overflow: hidden;
+  }
+  .loading::after{
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 1.2s infinite;
+  }
+  @keyframes shimmer{
+    to{ transform: translateX(100%); }
+  }
+
+  /* Filas de jugador clickeables */
+.roster-table .row.player-row,
+.stats-table .row.player-row {
+  cursor: pointer;
+  transition: background .18s ease;
+}
+
+.roster-table .row.player-row:hover,
+.stats-table .row.player-row:hover {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+/* Estilo sutil de enlace para el nombre (cuando no es botón) */
+.linkish {
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+@media (max-width: 420px){
+  .team-logo-lg{ width: 48px; height: 48px; }
+  .tab-btn{ padding: .45rem .7rem; font-size: .86rem; }
+  .filters{ gap: .4rem; }
+  .roster-table .row,
+  .schedule-table .row,
+  .injuries-table .row,
+  .stats-table .row{ padding: .5rem .7rem; }
+}
+
+/* ===== Horizontally scrollable tables (mobile-friendly) ===== */
+.roster-table,
+.schedule-table,
+.injuries-table,
+.stats-table,
+.depth-table {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* filas base */
+.roster-table .row,
+.schedule-table .row,
+.injuries-table .row,
+.stats-table .row,
+.depth-table .row {
+  align-items: center;
+  gap: 12px;
+}
+
+/* Roster: 7 columnas (# | Name | Age | HT | WT | EXP | College) */
+.roster-table .row {
+  display: grid;
+  grid-template-columns: 50px minmax(140px, 1.2fr) 60px 70px 70px 60px minmax(140px, 1fr);
+  min-width: 760px; /* fuerza overflow en pantallas angostas */
+}
+
+/* Schedule: Date | Opponent | Venue | Result | Status */
+.schedule-table .row {
+  display: grid;
+  grid-template-columns: 90px minmax(180px, 1.2fr) minmax(180px, 1fr) 80px 130px;
+  min-width: 860px;
+}
+
+/* Injuries: Player | Status | Injury | Updated */
+.injuries-table .row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.2fr) 130px minmax(260px, 1fr) 110px;
+  min-width: 880px;
+}
+
+/* Depth: Position | 1st | 2nd | 3rd | 4th */
+.depth-table .row {
+  display: grid;
+  grid-template-columns: 120px 1fr 1fr 1fr 1fr;
+  min-width: 720px;
+}
+
+/* Stats: columnas dinámicas */
+.stats-table {
+  display: block;
+}
+.stats-table .row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(90px, auto);
+  width: max-content;   /* la fila crece al contenido */
+  min-width: 640px;     /* crea overflow en chicos */
+}
+
+/* Ajustes en móviles */
+@media (max-width: 480px) {
+  .roster-table .row {
+    grid-template-columns: 42px minmax(120px, 1.2fr) 48px 60px 60px 50px minmax(120px, 1fr);
+    min-width: 660px;
+  }
+  .schedule-table .row {
+    grid-template-columns: 74px minmax(160px, 1.2fr) minmax(160px, 1fr) 64px 110px;
+    min-width: 740px;
+  }
+  .injuries-table .row {
+    grid-template-columns: minmax(160px, 1.2fr) 110px minmax(220px, 1fr) 90px;
+    min-width: 740px;
+  }
+  .depth-table .row {
+    grid-template-columns: 100px 1fr 1fr 1fr 1fr;
+    min-width: 640px;
+  }
+}
+
+/* feedback de drag */
+.roster-table,
+.schedule-table,
+.injuries-table,
+.stats-table,
+.depth-table {
+  cursor: grab;
+}
+.roster-table:active,
+.schedule-table:active,
+.injuries-table:active,
+.stats-table:active,
+.depth-table:active {
+  cursor: grabbing;
+}
+
+/* === Horizontal scroll para los chips de posiciones === */
+.pos-index{
+  display:flex;
+  gap:8px;
+  padding:6px 2px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scroll-snap-type:x proximity;
+}
+.pos-index .pos-chip{
+  flex:0 0 auto;
+  scroll-snap-align:start;
+}
+
+/* Contenedores de tablas: forzamos overflow horizontal y drag suave */
+.roster-table,
+.schedule-table,
+.injuries-table,
+.stats-table,
+.depth-table{
+  display:block;
+  position:relative;
+  max-width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  cursor:grab;
+}
+.roster-table:active,
+.schedule-table:active,
+.injuries-table:active,
+.stats-table:active,
+.depth-table:active{ cursor:grabbing; }
+
+/* Columnas como grid para que NO envuelvan y provoquen overflow horizontal */
+.roster-table .row,
+.schedule-table .row,
+.injuries-table .row,
+.stats-table .row,
+.depth-table .row{
+  align-items:center;
+  gap:12px;
+}
+
+/* Roster */
+.roster-table .row{
+  display:grid !important;
+  grid-template-columns:50px minmax(140px,1.2fr) 60px 70px 70px 60px minmax(140px,1fr);
+  min-width:760px;
+}
+
+/* Schedule */
+.schedule-table .row{
+  display:grid !important;
+  grid-template-columns:90px minmax(180px,1.2fr) minmax(180px,1fr) 80px 130px;
+  min-width:860px;
+}
+
+/* Injuries */
+.injuries-table .row{
+  display:grid !important;
+  grid-template-columns:minmax(180px,1.2fr) 130px minmax(260px,1fr) 110px;
+  min-width:880px;
+}
+
+/* Depth */
+.depth-table .row{
+  display:grid !important;
+  grid-template-columns:120px 1fr 1fr 1fr 1fr;
+  min-width:720px;
+}
+
+/* Stats: columnas dinámicas */
+.stats-table{ display:block; }
+.stats-table .row{
+  display:grid !important;
+  grid-auto-flow:column;
+  grid-auto-columns:minmax(90px,auto);
+  width:max-content;
+  min-width:640px;
+}
+
+/* Ajustes más compactos en pantallas pequeñas */
+@media (max-width:480px){
+  .roster-table .row{
+    grid-template-columns:42px minmax(120px,1.2fr) 48px 60px 60px 50px minmax(120px,1fr);
+    min-width:660px;
+  }
+  .schedule-table .row{
+    grid-template-columns:74px minmax(160px,1.2fr) minmax(160px,1fr) 64px 110px;
+    min-width:740px;
+  }
+  .injuries-table .row{
+    grid-template-columns:minmax(160px,1.2fr) 110px minmax(220px,1fr) 90px;
+    min-width:740px;
+  }
+  .depth-table .row{
+    grid-template-columns:100px 1fr 1fr 1fr 1fr;
+    min-width:640px;
+  }
+}
+/* Fuerza comportamiento de scroll horizontal en tablas */
+.roster-table,
+.schedule-table,
+.injuries-table,
+.stats-table,
+.depth-table {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  touch-action: pan-x;              /* <- clave para móviles */
+  overscroll-behavior-x: contain;   /* evita rebote lateral */
+}
+
+/* Barra de chips de posiciones: scroll horizontal */
+.pos-index{
+  display: flex;
+  gap: 8px;
+  padding: 6px 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+}
+.pos-index .pos-chip{
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* === Tabs-like horizontal scroll (shared) === */
+.tabs,
+.pos-index,
+.roster-table,
+.schedule-table,
+.injuries-table,
+.stats-table,
+.depth-table{
+  /* mismo “feel” que la barra de tabs */
+  scrollbar-gutter: stable both-edges;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+
+  /* sutil fade en los bordes para hint de scroll */
+  --fade-x: 22px;
+  mask-image: linear-gradient(to right,
+                transparent 0,
+                #000 var(--fade-x),
+                #000 calc(100% - var(--fade-x)),
+                transparent 100%);
+  -webkit-mask-image: linear-gradient(to right,
+                transparent,
+                #000 var(--fade-x),
+                #000 calc(100% - var(--fade-x)),
+                transparent);
+}
+
+/* que los chips se comporten como una línea “tabs-like” */
+.pos-index{
+  white-space: nowrap;
+}
+.pos-index .pos-chip{
+  display: inline-flex; /* evita saltos de línea indeseados */
+}
+
+/* === Edge fades (tabs-like) para scrollers horizontales === */
+.roster-table,
+.schedule-table,
+.injuries-table,
+.stats-table,
+.depth-table,
+.pos-index{
+  position: relative; /* necesario para overlays */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+}
+
+/* Overlays de desvanecido a los lados */
+.roster-table::before, .roster-table::after,
+.schedule-table::before, .schedule-table::after,
+.injuries-table::before, .injuries-table::after,
+.stats-table::before, .stats-table::after,
+.depth-table::before, .depth-table::after,
+.pos-index::before, .pos-index::after{
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 24px;              /* ancho del fade */
+  pointer-events: none;     /* no bloquea el scroll/drag */
+  z-index: 2;               /* por encima del contenido */
+}
+
+/* Fade izquierdo */
+.roster-table::before,
+.schedule-table::before,
+.injuries-table::before,
+.stats-table::before,
+.depth-table::before,
+.pos-index::before{
+  left: 0;
+  background: linear-gradient(to right,
+    color-mix(in oklab, var(--card-bg) 98%, black 2%) 0%,
+    rgba(0,0,0,0) 100%);
+}
+
+/* Fade derecho */
+.roster-table::after,
+.schedule-table::after,
+.injuries-table::after,
+.stats-table::after,
+.depth-table::after,
+.pos-index::after{
+  right: 0;
+  background: linear-gradient(to left,
+    color-mix(in oklab, var(--card-bg) 98%, black 2%) 0%,
+    rgba(0,0,0,0) 100%);
+}
