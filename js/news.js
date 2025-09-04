@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const container = document.getElementById('newsContainer');
   const loadMoreBtn = document.getElementById('loadMoreBtn');
   const toggleNFL = document.getElementById('toggleNFL');
-  const toggleNCAA = document.getElementById('toggleNCAA');
   const NEWS_LIMIT = 12;
   const LOAD_INCREMENT = 12;
 
@@ -66,14 +65,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const img = item?.images?.[0]?.url || item?.images?.[0]?.href || '';
     return img || 'img/placeholder.jpg';
   }
-  function pickImageCFB(item) {
-    const img = item?.images?.[0]?.url || item?.images?.[0]?.href || '';
-    return img || 'img/placeholder.jpg';
-  }
 
   // Guarda las noticias cargadas
   let nflHeadlines = [];
-  let collegeHeadlines = [];
   let currentType = 'nfl'; // default
   let currentIndex = 0;
 
@@ -82,11 +76,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // La estructura es { articles: [...] }
     const articles = (data.articles || []).filter(a => !!a.headline);
     return articles;
-  }
-
-  async function fetchCollegeNews() {
-    const data = await fetchWithTimeout('https://site.api.espn.com/apis/site/v2/sports/football/college-football/news');
-    return (data.articles || []).filter(item => !!item.headline);
   }
 
   function renderNews(headlines, from, to) {
@@ -126,10 +115,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Actualiza el toggle visualmente
   function setActiveToggle(type) {
     toggleNFL.classList.toggle('active', type === 'nfl');
-    toggleNCAA.classList.toggle('active', type === 'ncaa');
   }
 
-  // Lógica para cargar las noticias según el tipo (NFL/NCAA)
+  // Lógica para cargar las noticias según el tipo (NFL)
   async function showNews(type, initial = false) {
     setActiveToggle(type);
     resetNews();
@@ -164,35 +152,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         container.innerHTML = `<p>Failed to load NFL news.</p>`;
         loadMoreBtn.style.display = 'none';
       }
-    } else {
-      const cached = getCache('cfb');
-      if (cached) {
-        clearSkeleton();
-        renderNews(cached, currentIndex, currentIndex + NEWS_LIMIT);
-        currentIndex += NEWS_LIMIT;
-        if (currentIndex >= cached.length) loadMoreBtn.style.display = 'none';
-        fetchCollegeNews().then(fresh => {
-          setCache('cfb', fresh);
-        }).catch(()=>{});
-        return;
-      }
-      try {
-        const fresh = await fetchCollegeNews();
-        setCache('cfb', fresh);
-        clearSkeleton();
-        if (!fresh.length) {
-          container.innerHTML = '<p>No college football news available.</p>';
-          loadMoreBtn.style.display = 'none';
-          return;
-        }
-        renderNews(fresh, currentIndex, currentIndex + NEWS_LIMIT);
-        currentIndex += NEWS_LIMIT;
-        if (currentIndex >= fresh.length) loadMoreBtn.style.display = 'none';
-      } catch (e) {
-        clearSkeleton();
-        container.innerHTML = `<p>Failed to load college football news.</p>`;
-        loadMoreBtn.style.display = 'none';
-      }
     }
   }
 
@@ -203,16 +162,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       showNews('nfl');
     }
   });
-  toggleNCAA.addEventListener('click', () => {
-    if (currentType !== 'ncaa') {
-      currentType = 'ncaa';
-      showNews('ncaa');
-    }
-  });
 
   // Botón Load More
   loadMoreBtn.addEventListener('click', () => {
-    const cached = getCache(currentType === 'nfl' ? 'nfl' : 'cfb') || (currentType === 'nfl' ? nflHeadlines : collegeHeadlines);
+    const cached = getCache('nfl') || nflHeadlines;
     renderNews(cached, currentIndex, currentIndex + LOAD_INCREMENT);
     currentIndex += LOAD_INCREMENT;
     if (currentIndex >= cached.length) loadMoreBtn.style.display = 'none';
