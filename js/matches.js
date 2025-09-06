@@ -649,12 +649,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   initDefaultWeekAndRender();
-  setInterval(() => {
-    const scrollY = window.scrollY;
-    renderMatches().then(() => {
-      window.scrollTo(0, scrollY);
-    });
-  }, 60000);
+  // Se eliminó la recarga automática de toda la página
+  // Solo se mantiene la actualización de las tarjetas de partidos en vivo
 });
 
 async function updateLiveGameCard(gameId, card) {
