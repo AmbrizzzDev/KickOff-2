@@ -61,6 +61,7 @@
   overflow: hidden;
   max-height: 520px; /* ajusta según prefieras */
   overflow-y: auto;
+  max-width: 750px;
 }
 
 /* Group title */
