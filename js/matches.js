@@ -617,18 +617,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (detected?.week && [...weekFilter.options].some(o => o.value === detected.week)) {
           weekFilter.value = detected.week;
         }
-        renderMatches();
+        renderMatches().then(() => {
+          // Aplicar el filtro de búsqueda después de renderizar los partidos
+          applySearchFilter();
+        });
       }).catch(() => {
         updateSeasonTypeFilterForLeague();
         updateWeekFilterForSeasonType();
-        renderMatches();
+        renderMatches().then(() => {
+          // Aplicar el filtro de búsqueda después de renderizar los partidos
+          applySearchFilter();
+        });
       });
     });
   });
 
-  weekFilter.addEventListener('change', renderMatches);
+  weekFilter.addEventListener('change', async () => {
+    await renderMatches();
+    // Aplicar el filtro de búsqueda después de renderizar los partidos
+    applySearchFilter();
+  });
 
-  seasonTypeFilter.addEventListener('change', () => {
+  seasonTypeFilter.addEventListener('change', async () => {
     currentSeasonType = seasonTypeFilter.value;
     updateWeekFilterForSeasonType();
     // If user manually changes season type, pick week 1 by default for that season
@@ -636,16 +646,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if ([...weekFilter.options].some(o => o.value === defaultWeek)) {
       weekFilter.value = defaultWeek;
     }
-    renderMatches();
+    await renderMatches();
+    // Aplicar el filtro de búsqueda después de renderizar los partidos
+    applySearchFilter();
   });
 
-  searchInput.addEventListener('input', () => {
-    const term = searchInput.value.toLowerCase();
+  // Función para aplicar el filtro de búsqueda
+  function applySearchFilter() {
+    const term = searchInput.value.toLowerCase().trim();
+    if (term === '') return; // No aplicar filtro si está vacío
+    
     document.querySelectorAll('.match-card').forEach(card => {
       const names = Array.from(card.querySelectorAll('.team-name')).map(n => n.textContent.toLowerCase());
       card.style.display = names.some(n => n.includes(term)) ? '' : 'none';
     });
-  });
+  }
+  
+  searchInput.addEventListener('input', applySearchFilter);
 
   initDefaultWeekAndRender();
   // Se eliminó la recarga automática de toda la página
