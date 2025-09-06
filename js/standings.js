@@ -84,15 +84,15 @@ function teamLabelsHTML(team) {
 }
 
 
-  // Grid template for all columns (Team | W | L | T | PCT | HOME | AWAY | DIV | CONF | PF | PA | DIFF | STRK)
+  // Grid template for all columns (Team | W | L | T | PCT | PF | PA | DIFF | STRK)
 // ancho cómodo para que no se pisen; el contenedor hará scroll-x
 // Grid (desktop) — TEAM menos ancho
 const GRID_FULL =
-  '56px minmax(48px, .4fr) 48px 48px 48px 48px 64px 84px 84px 84px 84px 64px 64px 68px 68px';
+  '56px minmax(48px, .4fr) 48px 48px 48px 48px 64px 64px 68px 68px';
 
 // Grid (mobile/tablet) — TEAM aún más compacto
 const GRID_MOBILE =
-  '36px minmax(48px, .4fr) 42px 42px 42px 56px 64px 64px 64px 64px 56px 56px 60px 60px';
+  '36px minmax(48px, .4fr) 42px 42px 42px 56px 56px 56px 60px 60px';
 
 // Aplica el grid según el viewport (y actualiza en resize)
 function attachResponsiveColumns(card) {
@@ -308,6 +308,9 @@ function applyAbbrThreshold(card){
     placeholder.textContent = 'Loading standings...';
     standingsGrid.replaceChildren(placeholder);
     const conferences = await fetchStandings();
+    
+    // Cargar los datos de clasificaciones
+    
     const frag = document.createDocumentFragment();
 
     if (!conferences || !conferences.length) {
@@ -326,7 +329,7 @@ function applyAbbrThreshold(card){
       }
       return entries;
     };
-    const statObj = (arr, n) => arr.find(x => x.name === n || x.abbrev === n);
+    const statObj = (arr, n) => arr.find(x => x.name === n || x.abbrev === n || x.abbreviation === n || x.displayName === n || x.shortDisplayName === n);
     const toNum = (v) => {
       if (v === undefined || v === null || v === '-') return 0;
       const x = typeof v === 'string' ? parseFloat(v) : Number(v);
@@ -338,7 +341,23 @@ function applyAbbrThreshold(card){
       const raw = obj.value ?? obj.displayValue;
       return toNum(raw);
     };
-    const getStr = (n, arr) => (statObj(arr, n)?.displayValue) ?? (statObj(arr, n)?.value);
+    const getStr = (n, arr) => {
+      const obj = statObj(arr, n);
+      if (!obj) {
+        // Buscar por coincidencia parcial si no se encuentra una coincidencia exacta
+        const lowerN = n.toLowerCase();
+        const matchByPartial = arr.find(x => 
+          (x.name && x.name.toLowerCase().includes(lowerN)) ||
+          (x.displayName && x.displayName.toLowerCase().includes(lowerN)) ||
+          (x.shortDisplayName && x.shortDisplayName.toLowerCase().includes(lowerN)) ||
+          (x.abbreviation && x.abbreviation.toLowerCase().includes(lowerN))
+        );
+        if (matchByPartial) {
+          return matchByPartial.displayValue ?? matchByPartial.value;
+        }
+      }
+      return obj?.displayValue ?? obj?.value;
+    };
     const recordText = (base, stats) => {
       // 0) If ESPN already gives a record string, use it
       const direct = getStr(base, stats);
@@ -353,11 +372,335 @@ function applyAbbrThreshold(card){
 
       // 1) Build record from wins/losses/ties numbers. We must detect presence even if value is 0.
       const map = {
-        home:      { w: ['homeWins', 'homewins', 'homeRecordWins'],         l: ['homeLosses', 'homelosses', 'homeRecordLosses'],         t: ['homeTies', 'hometies', 'homeRecordTies'] },
-        away:      { w: ['awayWins', 'awaywins', 'awayRecordWins'],         l: ['awayLosses', 'awaylosses', 'awayRecordLosses'],         t: ['awayTies', 'awayties', 'awayRecordTies'] },
-        division:  { w: ['divisionWins', 'divWins'],                        l: ['divisionLosses', 'divLosses'],                          t: ['divisionTies', 'divTies'] },
-        conference:{ w: ['conferenceWins', 'confWins'],                     l: ['conferenceLosses', 'confLosses'],                       t: ['conferenceTies', 'confTies'] }
+        home:      { w: ['homeWins', 'homewins', 'homeRecordWins', 'home', 'homeRecord'],         l: ['homeLosses', 'homelosses', 'homeRecordLosses'],         t: ['homeTies', 'hometies', 'homeRecordTies'] },
+        away:      { w: ['awayWins', 'awaywins', 'awayRecordWins', 'away', 'awayRecord'],         l: ['awayLosses', 'awaylosses', 'awayRecordLosses'],         t: ['awayTies', 'awayties', 'awayRecordTies'] },
+        division:  { w: ['divisionWins', 'divWins', 'divisionRecord', 'divRecord', 'div'],                        l: ['divisionLosses', 'divLosses'],                          t: ['divisionTies', 'divTies'] },
+        conference:{ w: ['conferenceWins', 'confWins', 'conferenceRecord', 'confRecord', 'conf'],                     l: ['conferenceLosses', 'confLosses'],                       t: ['conferenceTies', 'confTies'] }
       };
+
+      // Check for record format in stats (e.g. "5-2" or "3-1-0")
+      const baseLower = base.toLowerCase();
+      
+      // Primero, buscar coincidencias exactas con el formato de registro
+      for (const stat of stats) {
+        const name = stat.name?.toLowerCase() || '';
+        const displayName = stat.displayName?.toLowerCase() || '';
+        const shortDisplayName = stat.shortDisplayName?.toLowerCase() || '';
+        const abbrev = stat.abbreviation?.toLowerCase() || '';
+        
+        // Check if any of the stat names match our base
+        if (name.includes(baseLower) || 
+            displayName.includes(baseLower) || 
+            shortDisplayName.includes(baseLower) || 
+            abbrev.includes(baseLower)) {
+          
+          const value = stat.displayValue || stat.value;
+          if (value && /\d+\-\d+(?:\-\d+)?/.test(String(value))) {
+            return String(value);
+          }
+        }
+      }
+      
+      // Buscar coincidencias parciales para casos especiales
+      const specialCases = {
+        'home': ['home', 'hm', 'h'],
+        'away': ['away', 'aw', 'a', 'road'],
+        'division': ['div', 'division', 'divisional'],
+        'conference': ['conf', 'conference']
+      };
+      
+      const keywords = specialCases[baseLower] || [baseLower];
+      
+      for (const keyword of keywords) {
+        for (const stat of stats) {
+          // Buscar en todas las propiedades del objeto stat
+          for (const [key, value] of Object.entries(stat)) {
+            if (typeof value === 'string' && /\d+\-\d+(?:\-\d+)?/.test(value) && 
+                key.toLowerCase().includes(keyword)) {
+              return value;
+            }
+            
+            // También buscar en el nombre de la estadística
+            const statName = (stat.name || '').toLowerCase();
+            if (statName.includes(keyword) && 
+                (stat.displayValue && /\d+\-\d+(?:\-\d+)?/.test(String(stat.displayValue)))) {
+              return String(stat.displayValue);
+            }
+          }
+        }
+      }
+      
+      // Buscar en el objeto completo para casos donde los datos están anidados
+      const findRecordInObject = (obj, keyword) => {
+        if (!obj || typeof obj !== 'object') return null;
+        
+        for (const [key, value] of Object.entries(obj)) {
+          // Si encontramos una clave que coincide con nuestra palabra clave
+          if (key.toLowerCase().includes(keyword)) {
+            // Y el valor es una cadena con formato de registro
+            if (typeof value === 'string' && /\d+\-\d+(?:\-\d+)?/.test(value)) {
+              return value;
+            }
+            // O si el valor es un objeto, buscar recursivamente
+            else if (typeof value === 'object' && value !== null) {
+              const result = findRecordInObject(value, keyword);
+              if (result) return result;
+            }
+          }
+          // Si el valor es un objeto, buscar recursivamente independientemente de la clave
+          else if (typeof value === 'object' && value !== null) {
+            const result = findRecordInObject(value, keyword);
+            if (result) return result;
+          }
+        }
+        return null;
+      };
+      
+      // Intentar encontrar el registro en todo el objeto de estadísticas
+      for (const keyword of keywords) {
+        for (const stat of stats) {
+          const result = findRecordInObject(stat, keyword);
+          if (result) return result;
+        }
+      }
+      
+      // Caso especial: Buscar en el objeto 'stat' completo
+      for (const stat of stats) {
+        // Verificar si el nombre de la estadística contiene nuestra base
+        const statName = (stat.name || '').toLowerCase();
+        const statDisplayName = (stat.displayName || '').toLowerCase();
+        const statShortName = (stat.shortDisplayName || '').toLowerCase();
+        const statAbbrev = (stat.abbreviation || '').toLowerCase();
+        
+        // Si alguno de los nombres coincide con nuestra base
+        if (keywords.some(kw => 
+            statName.includes(kw) || 
+            statDisplayName.includes(kw) || 
+            statShortName.includes(kw) || 
+            statAbbrev.includes(kw))) {
+          
+          // Intentar obtener el valor en diferentes formatos
+          const value = stat.displayValue || stat.value;
+          if (value && /\d+\-\d+(?:\-\d+)?/.test(String(value))) {
+            return String(value);
+          }
+        }
+      }
+      
+      // Caso especial para ESPN API: buscar en stats.splits
+      for (const stat of stats) {
+        if (stat.splits && Array.isArray(stat.splits)) {
+          for (const split of stat.splits) {
+            if (split.type && keywords.some(kw => split.type.toLowerCase().includes(kw))) {
+              if (split.displayValue && /\d+\-\d+(?:\-\d+)?/.test(String(split.displayValue))) {
+                return String(split.displayValue);
+              }
+            }
+          }
+        }
+      }
+      
+      // Caso especial para ESPN API: buscar en el objeto 'team'
+      if (stats.length > 0 && stats[0].team) {
+        const team = stats[0].team;
+        
+        // Buscar en records si existe
+        if (team.records) {
+          for (const record of team.records) {
+            if (record.type && keywords.some(kw => record.type.toLowerCase().includes(kw))) {
+              if (record.summary && /\d+\-\d+(?:\-\d+)?/.test(String(record.summary))) {
+                return String(record.summary);
+              }
+            }
+          }
+        }
+        
+        // Buscar en el objeto team directamente
+        for (const [key, value] of Object.entries(team)) {
+          if (keywords.some(kw => key.toLowerCase().includes(kw))) {
+            if (typeof value === 'string' && /\d+\-\d+(?:\-\d+)?/.test(value)) {
+              return value;
+            } else if (typeof value === 'object' && value !== null) {
+              // Si es un objeto, buscar en sus propiedades
+              for (const [subKey, subValue] of Object.entries(value)) {
+                if (typeof subValue === 'string' && /\d+\-\d+(?:\-\d+)?/.test(subValue)) {
+                  return subValue;
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Caso especial para ESPN API: buscar en el objeto 'record' dentro de 'team'
+      if (stats.length > 0 && stats[0].team && stats[0].team.record) {
+        const record = stats[0].team.record;
+        
+        // Buscar en items si existe
+        if (record.items && Array.isArray(record.items)) {
+          for (const item of record.items) {
+            if (item.type && keywords.some(kw => item.type.toLowerCase().includes(kw))) {
+              if (item.summary && /\d+\-\d+(?:\-\d+)?/.test(String(item.summary))) {
+                return String(item.summary);
+              }
+            }
+            // También buscar en description o name
+            if (item.description && keywords.some(kw => item.description.toLowerCase().includes(kw))) {
+              if (item.summary && /\d+\-\d+(?:\-\d+)?/.test(String(item.summary))) {
+                return String(item.summary);
+              }
+            }
+            if (item.name && keywords.some(kw => item.name.toLowerCase().includes(kw))) {
+              if (item.summary && /\d+\-\d+(?:\-\d+)?/.test(String(item.summary))) {
+                return String(item.summary);
+              }
+            }
+          }
+        }
+      }
+      
+      // Caso especial para ESPN API: buscar en el objeto 'records' dentro de 'team'
+      if (stats.length > 0 && stats[0].team && stats[0].team.records) {
+        const records = stats[0].team.records;
+        for (const record of records) {
+          // Buscar por tipo de registro
+          if (record.type && keywords.some(kw => record.type.toLowerCase().includes(kw))) {
+            if (record.summary && /\d+\-\d+(?:\-\d+)?/.test(String(record.summary))) {
+              return String(record.summary);
+            }
+          }
+          // Buscar por nombre o descripción
+          if (record.name && keywords.some(kw => record.name.toLowerCase().includes(kw))) {
+            if (record.summary && /\d+\-\d+(?:\-\d+)?/.test(String(record.summary))) {
+              return String(record.summary);
+            }
+          }
+          if (record.description && keywords.some(kw => record.description.toLowerCase().includes(kw))) {
+            if (record.summary && /\d+\-\d+(?:\-\d+)?/.test(String(record.summary))) {
+              return String(record.summary);
+            }
+          }
+        }
+      }
+      
+      // Caso especial para ESPN API: buscar en el objeto 'recordsSummary' dentro de 'team'
+      if (stats.length > 0 && stats[0].team && stats[0].team.recordsSummary) {
+        const recordsSummary = stats[0].team.recordsSummary;
+        for (const [key, value] of Object.entries(recordsSummary)) {
+          if (keywords.some(kw => key.toLowerCase().includes(kw))) {
+            if (typeof value === 'string' && /\d+\-\d+(?:\-\d+)?/.test(value)) {
+              return value;
+            }
+          }
+        }
+      }
+      
+      // Caso especial: buscar en el objeto principal de estadísticas
+      // A veces los datos están en el objeto principal y no en stats
+      if (stats.length > 0) {
+        const mainObj = stats[0];
+        if (mainObj.record) {
+          // Si hay un objeto record, buscar en él
+          for (const [key, value] of Object.entries(mainObj.record)) {
+            if (keywords.some(kw => key.toLowerCase().includes(kw))) {
+              if (typeof value === 'string' && /\d+\-\d+(?:\-\d+)?/.test(value)) {
+                return value;
+              }
+            }
+          }
+        }
+        
+        // Buscar directamente en el objeto principal
+        for (const [key, value] of Object.entries(mainObj)) {
+          if (keywords.some(kw => key.toLowerCase().includes(kw))) {
+            if (typeof value === 'string' && /\d+\-\d+(?:\-\d+)?/.test(value)) {
+              return value;
+            } else if (typeof value === 'object' && value !== null && key !== 'stats') {
+              // Si es un objeto, buscar en sus propiedades (excepto stats para evitar recursión)
+              for (const [subKey, subValue] of Object.entries(value)) {
+                if (typeof subValue === 'string' && /\d+\-\d+(?:\-\d+)?/.test(subValue)) {
+                  return subValue;
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Caso especial: buscar en el objeto 'standings' si existe
+      if (stats.length > 0 && stats[0].standings) {
+        const standings = stats[0].standings;
+        
+        // Buscar en el objeto standings directamente
+        for (const [key, value] of Object.entries(standings)) {
+          if (keywords.some(kw => key.toLowerCase().includes(kw))) {
+            if (typeof value === 'string' && /\d+\-\d+(?:\-\d+)?/.test(value)) {
+              return value;
+            }
+          }
+        }
+        
+        // Buscar en records si existe
+        if (standings.records) {
+          for (const record of standings.records) {
+            if (record.type && keywords.some(kw => record.type.toLowerCase().includes(kw))) {
+              if (record.summary && /\d+\-\d+(?:\-\d+)?/.test(String(record.summary))) {
+                return String(record.summary);
+              }
+            }
+          }
+        }
+      }
+      
+      // Caso especial: buscar en el objeto 'note' si existe
+      if (stats.length > 0 && stats[0].note) {
+        const note = stats[0].note;
+        if (typeof note === 'string') {
+          // Buscar patrones como "Home: 5-2" o "Away: 3-4"
+          for (const keyword of keywords) {
+            const regex = new RegExp(`${keyword}[:\s]+([0-9]+\-[0-9]+(?:\-[0-9]+)?)`, 'i');
+            const match = note.match(regex);
+            if (match && match[1]) {
+              return match[1];
+            }
+          }
+        }
+      }
+      
+      // Caso especial: buscar en el objeto 'stats' directamente
+      if (stats.length > 0) {
+        // Buscar en cada objeto de estadística
+        for (const stat of stats) {
+          // Verificar si el objeto tiene propiedades que coinciden con nuestras palabras clave
+          for (const [key, value] of Object.entries(stat)) {
+            if (keywords.some(kw => key.toLowerCase().includes(kw))) {
+              // Si el valor es una cadena con formato de registro
+              if (typeof value === 'string' && /\d+\-\d+(?:\-\d+)?/.test(value)) {
+                return value;
+              }
+              // Si el valor es un objeto, buscar en sus propiedades
+              else if (typeof value === 'object' && value !== null) {
+                for (const [subKey, subValue] of Object.entries(value)) {
+                  if (typeof subValue === 'string' && /\d+\-\d+(?:\-\d+)?/.test(subValue)) {
+                    return subValue;
+                  }
+                }
+              }
+            }
+          }
+          
+          // Buscar en categorías específicas si existen
+          if (stat.categories && Array.isArray(stat.categories)) {
+            for (const category of stat.categories) {
+              if (category.name && keywords.some(kw => category.name.toLowerCase().includes(kw))) {
+                if (category.value && /\d+\-\d+(?:\-\d+)?/.test(String(category.value))) {
+                  return String(category.value);
+                }
+              }
+            }
+          }
+        }
+      }
 
       const pick = (cands) => {
         for (const key of cands) {
@@ -430,10 +773,6 @@ function applyAbbrThreshold(card){
   <span class="col-l">L</span>
   <span class="col-t">T</span>
   <span class="col-pct">PCT</span>
-  <span class="col-home">HOME</span>
-  <span class="col-away">AWAY</span>
-  <span class="col-div">DIV</span>
-  <span class="col-conf">CONF</span>
   <span class="col-pf">PF</span>
   <span class="col-pa">PA</span>
   <span class="col-diff">DIFF</span>
@@ -463,10 +802,6 @@ function applyAbbrThreshold(card){
           <span class="col-l num">${fmtInt(l)}</span>
           <span class="col-t num">${fmtInt(t)}</span>
           <span class="col-pct num">${pctText(w, l, t, stats)}</span>
-          <span class="col-home num">${recordText('home', stats)}</span>
-          <span class="col-away num">${recordText('away', stats)}</span>
-          <span class="col-div num">${recordText('division', stats)}</span>
-          <span class="col-conf num">${recordText('conference', stats)}</span>
           <span class="col-pf num">${fmtNum(getNum('pointsFor', stats))}</span>
           <span class="col-pa num">${fmtNum(getNum('pointsAgainst', stats))}</span>
           <span class="col-diff num">${fmtNum(getNum('pointsFor', stats) - getNum('pointsAgainst', stats))}</span>
@@ -512,10 +847,6 @@ function applyAbbrThreshold(card){
   <span class="col-l">L</span>
   <span class="col-t">T</span>
   <span class="col-pct">PCT</span>
-  <span class="col-home">HOME</span>
-  <span class="col-away">AWAY</span>
-  <span class="col-div">DIV</span>
-  <span class="col-conf">CONF</span>
   <span class="col-pf">PF</span>
   <span class="col-pa">PA</span>
   <span class="col-diff">DIFF</span>
@@ -545,10 +876,6 @@ function applyAbbrThreshold(card){
             <span class="col-l num">${fmtInt(l)}</span>
             <span class="col-t num">${fmtInt(t)}</span>
             <span class="col-pct num">${pctText(w, l, t, stats)}</span>
-            <span class="col-home num">${recordText('home', stats)}</span>
-            <span class="col-away num">${recordText('away', stats)}</span>
-            <span class="col-div num">${recordText('division', stats)}</span>
-            <span class="col-conf num">${recordText('conference', stats)}</span>
             <span class="col-pf num">${fmtNum(getNum('pointsFor', stats))}</span>
             <span class="col-pa num">${fmtNum(getNum('pointsAgainst', stats))}</span>
             <span class="col-diff num">${fmtNum(getNum('pointsFor', stats) - getNum('pointsAgainst', stats))}</span>
@@ -615,10 +942,6 @@ function applyAbbrThreshold(card){
   <span class="col-l">L</span>
   <span class="col-t">T</span>
   <span class="col-pct">PCT</span>
-  <span class="col-home">HOME</span>
-  <span class="col-away">AWAY</span>
-  <span class="col-div">DIV</span>
-  <span class="col-conf">CONF</span>
   <span class="col-pf">PF</span>
   <span class="col-pa">PA</span>
   <span class="col-diff">DIFF</span>
@@ -660,10 +983,6 @@ function applyAbbrThreshold(card){
           <span class="col-l num">${fmtInt(l)}</span>
           <span class="col-t num">${fmtInt(t)}</span>
           <span class="col-pct num">${pctText(w, l, t, stats)}</span>
-          <span class="col-home num">${recordText('home', stats)}</span>
-          <span class="col-away num">${recordText('away', stats)}</span>
-          <span class="col-div num">${recordText('division', stats)}</span>
-          <span class="col-conf num">${recordText('conference', stats)}</span>
           <span class="col-pf num">${fmtNum(getNum('pointsFor', stats))}</span>
           <span class="col-pa num">${fmtNum(getNum('pointsAgainst', stats))}</span>
           <span class="col-diff num">${fmtNum(getNum('pointsFor', stats) - getNum('pointsAgainst', stats))}</span>
