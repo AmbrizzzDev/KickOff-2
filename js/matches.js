@@ -275,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function fetchWeekData(week) {
     const url = getScheduleUrl(week);
-    console.log("🌐 URL solicitada:", url);
 
     const res = await fetch(url);
     const data = await res.json();
