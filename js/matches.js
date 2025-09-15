@@ -34,7 +34,30 @@ document.addEventListener('DOMContentLoaded', () => {
   function getTeamNameRaw(t) {
     const key = teamKeyFromRaw(t);
     const local = TEAM_MAP && TEAM_MAP[key];
-    return (local?.displayName) || t?.displayName || t?.shortDisplayName || t?.name || key || 'TBD';
+
+    // Prefer nickname-only sources (no city)
+    const nickname =
+      local?.name ||
+      local?.shortDisplayName ||
+      t?.name ||
+      t?.shortDisplayName;
+
+    if (nickname && String(nickname).trim()) return nickname;
+
+    // Fallback: strip location from displayName when possible
+    const disp = (local?.displayName || t?.displayName || '').trim();
+    const loc = (t?.location || '').trim();
+    if (disp && loc && disp.toLowerCase().startsWith(loc.toLowerCase())) {
+      const stripped = disp.slice(loc.length).trim();
+      if (stripped) return stripped;
+    }
+    // Last resort: take trailing words of displayName ("Detroit Lions" -> "Lions")
+    if (disp) {
+      const parts = disp.split(/\s+/);
+      if (parts.length > 1) return parts.slice(1).join(' ');
+      return disp;
+    }
+    return key || 'TBD';
   }
 
   // Render timeouts (NFL): 3 pips per team, remaining vs used
@@ -356,16 +379,11 @@ document.addEventListener('DOMContentLoaded', () => {
         timeDisplay = `Q${status.period} • ${status.displayClock}`;
       }
 
-      let statusBadge = '';
-      if (isSuspended) statusBadge = '<div class="suspended-badge">SUSPENDED</div>';
-      else if (isLive) statusBadge = '<div class="live-badge">LIVE</div>';
-      else if (isFinal) statusBadge = '<div class="final-badge">FINAL</div>';
-
       const matchCard = document.createElement('div');
       matchCard.className = `match-card ${isLive ? 'live' : ''} ${isFinal ? 'final' : ''} ${isSuspended ? 'suspended' : ''}`;
       matchCard.innerHTML = `
         <div class="match-header">
-          ${statusBadge}
+          <p class="match-week">${getWeekLabel(weekNumber)}</p>
           <span class="match-time">${timeDisplay}</span>
         </div>
         <div class="teams-container">
@@ -374,7 +392,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="team-name">${getTeamNameRaw(away?.team)}</span>
             ${(isLive || isFinal || isSuspended) ? `<span class="score">${away?.score ?? '0'}</span>` : ''}
           </div>
-          <span class="vs-text">VS</span>
+          <div class="center-stack">
+            <div class="center-label ${isFinal ? 'final' : ''}">${isFinal ? 'FINAL' : 'VS'}</div>
+          </div>
           <div class="team">
             <img src="${getTeamLogoRaw(home?.team)}" class="team-logo">
             <span class="team-name">${getTeamNameRaw(home?.team)}</span>
@@ -383,7 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="timeouts-container" style="display:none;margin:6px 10px 0 10px;"></div>
         <div class="match-details">
-          <p class="match-week">${getWeekLabel(weekNumber)}</p>
           <p class="match-stadium">@ ${comp.venue?.fullName || 'TBD'}</p>
         </div>`;
 
@@ -653,16 +672,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Función para aplicar el filtro de búsqueda
   function applySearchFilter() {
-    const term = searchInput.value.toLowerCase().trim();
-    if (term === '') return; // No aplicar filtro si está vacío
-    
-    document.querySelectorAll('.match-card').forEach(card => {
+    const term = (searchInput?.value || '').toLowerCase().trim();
+    const cards = document.querySelectorAll('.match-card');
+    if (!term) {
+      // If search is empty, reset visibility of all cards
+      cards.forEach(card => card.style.removeProperty('display'));
+      return;
+    }
+    cards.forEach(card => {
       const names = Array.from(card.querySelectorAll('.team-name')).map(n => n.textContent.toLowerCase());
       card.style.display = names.some(n => n.includes(term)) ? '' : 'none';
     });
   }
   
   searchInput.addEventListener('input', applySearchFilter);
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      searchInput.value = '';
+      applySearchFilter();
+    }
+  });
 
   initDefaultWeekAndRender();
   // Se eliminó la recarga automática de toda la página
@@ -722,11 +751,32 @@ async function updateLiveGameCard(gameId, card) {
 
     const matchHeader = card.querySelector('.match-header');
     if (matchHeader) {
-      let badge = '';
-      if (isSuspended) badge = '<div class="suspended-badge">SUSPENDED</div>';
-      else if (isLive) badge = '<div class="live-badge">LIVE</div>';
-      else if (status.type?.state === 'post') badge = '<div class="final-badge">FINAL</div>';
-      matchHeader.innerHTML = `${badge}<span class="match-time">${timeDisplay}</span>`;
+      // Derive week number from summary data if available
+      const weekNo = String(
+        data?.header?.week?.number ??
+        data?.week?.number ??
+        ''
+      ).trim();
+
+      const weekText = weekNo ? (currentSeasonType === '1' ? getWeekLabel(weekNo) : `Week ${weekNo}`) : (card.querySelector('.match-week')?.textContent || '');
+
+      // Ensure a .match-week element exists at the start (top-left)
+      let weekEl = matchHeader.querySelector('.match-week');
+      if (!weekEl) {
+        weekEl = document.createElement('p');
+        weekEl.className = 'match-week';
+        matchHeader.prepend(weekEl);
+      }
+      if (weekText) weekEl.textContent = weekText;
+
+      // Update time label without replacing the entire header
+      let timeEl = matchHeader.querySelector('.match-time');
+      if (!timeEl) {
+        timeEl = document.createElement('span');
+        timeEl.className = 'match-time';
+        matchHeader.appendChild(timeEl);
+      }
+      timeEl.textContent = timeDisplay;
     }
 
     if (isSuspended || status.type?.state === 'post') {
