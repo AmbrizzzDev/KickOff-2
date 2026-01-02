@@ -601,7 +601,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <option value="1">Wild Card</option>
         <option value="2">Divisional Round</option>
         <option value="3">Conference Championship</option>
-        <option value="4">Super Bowl</option>
+        <option value="4">Pro Bowl</option>
+        <option value="5">Super Bowl</option>
       `;
     }
     weekFilter.disabled = false;
@@ -615,6 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
         case 2: return 'Preseason Week 1';
         case 3: return 'Preseason Week 2';
         case 4: return 'Preseason Week 3';
+        case 5: return 'Super Bowl';
         default: return 'Preseason';
       }
     }

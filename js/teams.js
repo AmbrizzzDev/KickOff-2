@@ -1,4 +1,3 @@
-// /js/teams.js
 (() => {
     let APP = document.getElementById('teamsApp');
     let TOOLBAR = document.getElementById('teamsToolbar');
